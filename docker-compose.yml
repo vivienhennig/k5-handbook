@@ -1,0 +1,12 @@
+version: '3'
+services:
+  k5-handbook:
+    build: .
+    container_name: k5-handbook
+    restart: always
+    ports:
+      # Mapping: Port 3000 auf dem Server -> Port 80 im Container
+      # Dein Reverse Proxy (Nginx/Traefik) muss handbook.k5.de auf localhost:3000 leiten.
+      - "3000:80"
+    environment:
+      - NODE_ENV=production

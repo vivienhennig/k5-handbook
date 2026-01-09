@@ -1,0 +1,43 @@
+Logs
+
+logs
+.log
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+Node modules (niemals hochladen, werden beim Build installiert)
+
+node_modules
+.npm
+.yarn-integrity
+
+Build Output (das Ergebnis von "npm run build")
+
+dist
+dist-ssr
+*.local
+
+Editor directories and files
+
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs
+*.njsproj
+*.sln
+*.sw?
+
+Environment Variables (Sicherheit!)
+
+.env
+.env.*
+!.env.example
+
+Testing
+
+coverage

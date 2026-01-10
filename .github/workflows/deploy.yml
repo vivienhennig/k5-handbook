@@ -1,0 +1,28 @@
+name: Deploy to Server
+
+# ÄNDERUNG: Nur noch manueller Start via GitHub Oberfläche
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          # Was soll auf dem Server passieren?
+          script: |
+            # 1. In den Ordner gehen
+            cd k5-handbook
+            
+            # 2. Den neuesten Code von GitHub holen
+            git pull origin main
+            
+            # 3. Docker neu bauen und im Hintergrund starten
+            # (Das --build Flag sorgt dafür, dass Änderungen im React-Code übernommen werden)
+            docker-compose up -d --build

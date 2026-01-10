@@ -6,30 +6,11 @@ import {
   Globe, Image, Type, Printer, Smartphone, Wifi, Zap, Settings, List, PenTool, Flag, MessageSquare, LogIn, LogOut, Lock, Star, Moon, Sun, Clock, Bell, Trash2, Plus
 } from 'lucide-react';
 
-// --- FIREBASE IMPORTS ---
+// --- FIREBASE CONFIGURATION ---
 import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged,
-  createUserWithEmailAndPassword 
-} from 'firebase/auth';
-import { 
-  getFirestore, 
-  collection, 
-  addDoc, 
-  getDocs, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  deleteDoc, 
-  query, 
-  orderBy, 
-  serverTimestamp 
-} from 'firebase/firestore';
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore, collection, addDoc, getDocs, doc, getDoc, setDoc, deleteDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
 
-// --- FIREBASE CONFIGURATION (HIER DEINE DATEN EINFÜGEN!) ---
 const firebaseConfig = {
   apiKey: "AIzaSyBQYPaET3_lnPBQFn4a08d8jT7Uv_zzw3A",
   authDomain: "k5-handbook.firebaseapp.com",
@@ -39,19 +20,20 @@ const firebaseConfig = {
   appId: "1:294194246346:web:d867bffffd011ddae3ba33"
 };
 
-// Initialize Firebase
 let app, auth, db;
 try {
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
+    // Nur initialisieren, wenn echte Keys vorhanden sind (Länge checken als simpler Test)
+    if (firebaseConfig.apiKey !== "DEIN_API_KEY") {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+    }
 } catch (e) {
-    console.warn("Firebase noch nicht konfiguriert.");
+    console.warn("Firebase Init Error:", e);
 }
 
 // --- CONFIGURATION & DATA ---
 
-// 👑 MASTER ADMIN (Diese E-Mail ist IMMER Admin)
 const MASTER_ADMIN_EMAIL = "admin@k5-gmbh.com"; 
 
 const K5_COLORS = [
@@ -66,7 +48,6 @@ const K5_COLORS = [
 const SECTIONS_CONFIG = [
   { id: 'web', title: "Webseite Guidelines", desc: "Content, Bilder, SEO und Design.", icon: Layout, lastUpdated: '2025-11-01T10:00:00Z' },
   { id: 'vivenu', title: "Vivenu Event Setup", desc: "Einstellungen und Checklisten für neue Events.", icon: CreditCard, lastUpdated: '2025-12-01T10:00:00Z' },
-  // { id: 'exhibitor', title: "Ausstellerportal", desc: "Partner Onboarding, Login & Assets.", icon: Users, lastUpdated: '2025-11-15T10:00:00Z' }, // HIDDEN
   { id: 'support', title: "Customer Support", desc: "Playbook, Snippets & Eskalations-Matrix.", icon: LifeBuoy, lastUpdated: '2026-01-16T10:00:00Z' },
   { id: 'tickets', title: "Ticket Logik", desc: "Preise, Kategorien und Phasen.", icon: FileText, lastUpdated: '2026-01-10T09:00:00Z' },
   { id: 'votings', title: "Voting System", desc: "Awards, User Flow & Tech Stack.", icon: MousePointer, lastUpdated: '2025-10-01T10:00:00Z' },
@@ -84,21 +65,9 @@ const TICKET_PHASES = [
 ];
 
 const SNIPPETS = [
-  {
-    id: "snip_ticket",
-    title: "🎟️ Ticket nicht erhalten",
-    text: `Hallo [Name],\n\nvielen Dank für deine Nachricht.\n\nIch habe gerade im System nachgeschaut: Deine Bestellung war erfolgreich! 🎉\nManchmal landen die Tickets im Spam-Ordner. Der Absender ist "Vivenu".\n\nIch habe dir das Ticket zur Sicherheit nochmal an [Email] gesendet.\nSag Bescheid, falls es immer noch nicht da ist.\n\nLiebe Grüße,\n[Dein Name]`
-  },
-  {
-    id: "snip_invoice",
-    title: "📄 Rechnung ändern (Adresse)",
-    text: `Hallo [Name],\n\ndanke für die Info. Ich habe die Rechnungsadresse wie gewünscht angepasst.\nAnbei findest du die korrigierte Rechnung als PDF.\n\nBeste Grüße,\n[Dein Name]`
-  },
-  {
-    id: "snip_cancel",
-    title: "⛔ Storno Anfrage (Ablehnung)",
-    text: `Hallo [Name],\n\ndanke für deine Nachricht. Es tut uns leid zu hören, dass du nicht dabei sein kannst.\n\nLeider sind unsere Tickets laut AGB generell vom Umtausch und der Rückgabe ausgeschlossen. Daher können wir den Betrag nicht erstatten.\n\nDu kannst dein Ticket aber jederzeit an einen Kollegen oder Bekannten weitergeben. Nutze dafür einfach den Link in deiner Bestätigungsmail ("Ticket verwalten").\n\nHoffentlich klappt es beim nächsten Mal!\n\nViele Grüße,\n[Dein Name]`
-  }
+  { id: "snip_ticket", title: "🎟️ Ticket nicht erhalten", text: `Hallo [Name],\n\nvielen Dank für deine Nachricht.\n\nIch habe gerade im System nachgeschaut: Deine Bestellung war erfolgreich! 🎉\nManchmal landen die Tickets im Spam-Ordner. Der Absender ist "Vivenu".\n\nIch habe dir das Ticket zur Sicherheit nochmal an [Email] gesendet.\nSag Bescheid, falls es immer noch nicht da ist.\n\nLiebe Grüße,\n[Dein Name]` },
+  { id: "snip_invoice", title: "📄 Rechnung ändern (Adresse)", text: `Hallo [Name],\n\ndanke für die Info. Ich habe die Rechnungsadresse wie gewünscht angepasst.\nAnbei findest du die korrigierte Rechnung als PDF.\n\nBeste Grüße,\n[Dein Name]` },
+  { id: "snip_cancel", title: "⛔ Storno Anfrage (Ablehnung)", text: `Hallo [Name],\n\ndanke für deine Nachricht. Es tut uns leid zu hören, dass du nicht dabei sein kannst.\n\nLeider sind unsere Tickets laut AGB generell vom Umtausch und der Rückgabe ausgeschlossen. Daher können wir den Betrag nicht erstatten.\n\nDu kannst dein Ticket aber jederzeit an einen Kollegen oder Bekannten weitergeben. Nutze dafür einfach den Link in deiner Bestätigungsmail ("Ticket verwalten").\n\nHoffentlich klappt es beim nächsten Mal!\n\nViele Grüße,\n[Dein Name]` }
 ];
 
 const CONTACTS = [
@@ -124,11 +93,14 @@ const AVAILABLE_TOOLS = [
   'Slack', 'Google Docs', 'Typeform', 'Wordpress'
 ];
 
-/* ==========================================================================================
-   2. SERVICES & UTILS (REAL FIREBASE IMPLEMENTATION)
-   ========================================================================================== */
+const INITIAL_NEWS = [
+    { id: 1, date: "15.01.", text: "Neue Non-Retailer Preise im Support-Tab ergänzt.", type: "update" },
+    { id: 2, date: "14.01.", text: "WLAN-Passwort für die Akkreditierung geändert.", type: "alert" },
+    { id: 3, date: "10.01.", text: "Handbook v1.0 ist live! 🎉", type: "info" }
+];
 
-// --- FUZZY SEARCH HELPER ---
+// --- API WRAPPERS (With LocalStorage Fallback) ---
+
 const levenshteinDistance = (a, b) => {
     if (a.length === 0) return b.length;
     if (b.length === 0) return a.length;
@@ -140,42 +112,48 @@ const levenshteinDistance = (a, b) => {
             if (b.charAt(i - 1) === a.charAt(j - 1)) {
                 matrix[i][j] = matrix[i - 1][j - 1];
             } else {
-                matrix[i][j] = Math.min(
-                    matrix[i - 1][j - 1] + 1,
-                    Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
-                );
+                matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
             }
         }
     }
     return matrix[b.length][a.length];
 };
 
-// --- API WRAPPERS ---
-
+// HYBRID API: Uses Firebase if available, else LocalStorage (Mock)
 const feedbackApi = {
     async submit(data) {
-        if (!db) return;
-        try {
-            await addDoc(collection(db, "feedback"), {
-                ...data,
-                createdAt: serverTimestamp(),
-                status: 'open'
+        if (db) {
+            try {
+                await addDoc(collection(db, "feedback"), { ...data, createdAt: serverTimestamp(), status: 'open' });
+                return { success: true };
+            } catch (e) { console.error("Error adding feedback: ", e); throw e; }
+        } else {
+            // Fallback: LocalStorage
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const currentData = JSON.parse(localStorage.getItem('k5_feedback_db') || '[]');
+                    const newRecord = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), status: 'open', ...data };
+                    localStorage.setItem('k5_feedback_db', JSON.stringify([newRecord, ...currentData]));
+                    resolve({ success: true });
+                }, 300);
             });
-            return { success: true };
-        } catch (e) {
-            console.error("Error adding feedback: ", e);
-            throw e;
         }
     },
     async getAll() {
-        if (!db) return [];
-        try {
-            const q = query(collection(db, "feedback"), orderBy("createdAt", "desc"));
-            const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), createdAt: doc.data().createdAt?.toDate().toISOString() || new Date().toISOString() }));
-        } catch (e) {
-            console.error("Error fetching feedback: ", e);
-            return [];
+        if (db) {
+            try {
+                const q = query(collection(db, "feedback"), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), createdAt: doc.data().createdAt?.toDate().toISOString() || new Date().toISOString() }));
+            } catch (e) { return []; }
+        } else {
+            // Fallback: LocalStorage
+            return new Promise((resolve) => {
+                 setTimeout(() => {
+                    const data = JSON.parse(localStorage.getItem('k5_feedback_db') || '[]');
+                    resolve(data);
+                }, 300);
+            });
         }
     }
 };
@@ -191,11 +169,16 @@ const userApi = {
             } else {
                 // Init new user doc
                 const initialData = { favorites: [], readHistory: {}, role: 'user' };
+                // WICHTIG: Hier tritt der Fehler auf, wenn die Security Rules fehlen!
                 await setDoc(docRef, initialData);
                 return initialData;
             }
         } catch (e) {
-            console.error("Error getting user data:", e);
+            if (e.code === 'permission-denied') {
+                console.error("⛔ FEHLER: Fehlende Rechte! Bitte prüfe die Firestore Security Rules in der Firebase Console.");
+            } else {
+                console.error("Error getting user data:", e);
+            }
             return { favorites: [], readHistory: {}, role: 'user' };
         }
     },
@@ -211,77 +194,117 @@ const userApi = {
     async markSectionRead(userId, sectionId) {
         if (!db) return;
         try {
-            const userRef = doc(db, "users", userId);
-            const userData = await userApi.getUserData(userId);
-            const newHistory = { ...userData.readHistory, [sectionId]: new Date().toISOString() };
-            await setDoc(userRef, { readHistory: newHistory }, { merge: true });
+             // Fetch user data first to safely merge history
+             const userData = await userApi.getUserData(userId);
+             const newHistory = { ...userData.readHistory, [sectionId]: new Date().toISOString() };
+             
+             const userRef = doc(db, "users", userId);
+             await setDoc(userRef, { readHistory: newHistory }, { merge: true });
         } catch (e) {
-            console.error("Error marking read:", e);
+            if (e.code === 'permission-denied') {
+                 console.warn("⛔ Speichern fehlgeschlagen (Rechte fehlen). Hast du die Security Rules angepasst?");
+            } else {
+                 console.error("Error marking read:", e);
+            }
         }
     }
 };
 
 const newsApi = {
     async getAll() {
-        if (!db) return [];
-        try {
-            const q = query(collection(db, "news"), orderBy("id", "desc"));
-            const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
-        } catch (e) {
-            console.error("Error getting news:", e);
-            return [];
+        if (db) {
+            try {
+                const q = query(collection(db, "news"), orderBy("id", "desc"));
+                const querySnapshot = await getDocs(q);
+                const news = querySnapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
+                return news.length > 0 ? news : INITIAL_NEWS;
+            } catch (e) { return INITIAL_NEWS; }
+        } else {
+            // Fallback
+            return new Promise((resolve) => {
+                const data = JSON.parse(localStorage.getItem('k5_news_db'));
+                if (!data) {
+                    localStorage.setItem('k5_news_db', JSON.stringify(INITIAL_NEWS));
+                    resolve(INITIAL_NEWS);
+                } else {
+                    resolve(data);
+                }
+            });
         }
     },
     async add(item) {
-        if (!db) return [];
-        try {
-            await addDoc(collection(db, "news"), { ...item, id: Date.now() }); 
-            return await newsApi.getAll();
-        } catch (e) {
-            console.error("Error adding news:", e);
-            return [];
+        if (db) {
+            try {
+                await addDoc(collection(db, "news"), { ...item, id: Date.now() }); 
+                return await newsApi.getAll();
+            } catch (e) { return []; }
+        } else {
+            // Fallback
+            return new Promise((resolve) => {
+                const current = JSON.parse(localStorage.getItem('k5_news_db') || '[]');
+                // Ensure initialized if empty and no key
+                const base = (current.length === 0 && !localStorage.getItem('k5_news_db')) ? INITIAL_NEWS : current;
+                const newItem = { id: Date.now(), ...item };
+                const updated = [newItem, ...base];
+                localStorage.setItem('k5_news_db', JSON.stringify(updated));
+                resolve(updated);
+            });
         }
     },
     async delete(firebaseId) {
-        if (!db) return [];
-        try {
-            await deleteDoc(doc(db, "news", firebaseId));
-            return await newsApi.getAll();
-        } catch (e) {
-            console.error("Error deleting news:", e);
-            return [];
+        // Note: For mock mode, firebaseId is the numeric ID. For real DB, it's the doc string ID.
+        if (db) {
+            try {
+                await deleteDoc(doc(db, "news", firebaseId));
+                return await newsApi.getAll();
+            } catch (e) { return []; }
+        } else {
+            // Fallback
+             return new Promise((resolve) => {
+                const current = JSON.parse(localStorage.getItem('k5_news_db') || '[]');
+                // Mock delete uses numerical ID
+                const updated = current.filter(n => n.id !== firebaseId && n.firebaseId !== firebaseId);
+                localStorage.setItem('k5_news_db', JSON.stringify(updated));
+                resolve(updated);
+            });
         }
     }
 };
 
 const authService = {
     async login(email, password) {
-        if (!auth) throw new Error("Firebase not initialized");
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        return userCredential.user;
+        if (auth) {
+             const userCredential = await signInWithEmailAndPassword(auth, email, password);
+             return userCredential.user;
+        } else {
+            // Fallback Mock Login
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    const namePart = email.split('@')[0];
+                    const displayName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+                    if (password === 'k5') {
+                        resolve({ uid: 'admin_1', email: email, displayName: displayName + ' (Admin)', role: 'admin' });
+                    } else {
+                        resolve({ uid: `user_${Date.now()}`, email: email, displayName: displayName, role: 'user' });
+                    }
+                }, 500);
+            });
+        }
     },
     async logout() {
-        if (!auth) return;
-        await signOut(auth);
+        if (auth) await signOut(auth);
     }
 };
 
 /* ==========================================================================================
-   3. SUB-COMPONENTS (UI Building Blocks)
+   3. SUB-COMPONENTS
    ========================================================================================== */
 
 const Card = ({ icon: Icon, title, desc, onClick, isFavorite, onToggleFavorite, hasUpdate }) => (
-  <div 
-    onClick={onClick}
-    className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border-t-4 border-blue-600 hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer group relative border border-gray-200 dark:border-gray-700 h-full flex flex-col"
-  >
+  <div onClick={onClick} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border-t-4 border-blue-600 hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer group relative border border-gray-200 dark:border-gray-700 h-full flex flex-col">
     {hasUpdate && <div className="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md animate-pulse z-10">NEU</div>}
     {onToggleFavorite && (
-        <button 
-            onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
-            className={`absolute top-4 right-4 p-1.5 rounded-full transition-colors z-10 ${isFavorite ? 'text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30' : 'text-gray-300 dark:text-gray-600 hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30'}`}
-        >
+        <button onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }} className={`absolute top-4 right-4 p-1.5 rounded-full transition-colors z-10 ${isFavorite ? 'text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30' : 'text-gray-300 dark:text-gray-600 hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30'}`}>
             <Star size={20} fill={isFavorite ? "currentColor" : "none"} />
         </button>
     )}
@@ -325,10 +348,7 @@ const CodeBlock = ({ code, label = "JSON" }) => {
   const handleCopy = () => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); };
   return (
     <div className="relative bg-slate-900 rounded-lg overflow-hidden my-4 border border-slate-700 shadow-lg">
-      <div className="flex justify-between items-center px-4 py-2 bg-slate-800 border-b border-slate-700">
-        <span className="text-xs font-mono text-slate-400">{label}</span>
-        <button onClick={handleCopy} className="text-xs flex items-center gap-1 text-slate-400 hover:text-white">{copied ? <Check size={14} className="text-green-400"/> : <Copy size={14}/>}{copied ? "Kopiert!" : "Kopieren"}</button>
-      </div>
+      <div className="flex justify-between items-center px-4 py-2 bg-slate-800 border-b border-slate-700"><span className="text-xs font-mono text-slate-400">{label}</span><button onClick={handleCopy} className="text-xs flex items-center gap-1 text-slate-400 hover:text-white">{copied ? <Check size={14} className="text-green-400"/> : <Copy size={14}/>}{copied ? "Kopiert!" : "Kopieren"}</button></div>
       <pre className="p-4 text-xs font-mono text-green-400 overflow-x-auto whitespace-pre-wrap">{code}</pre>
     </div>
   );
@@ -342,10 +362,7 @@ const NewsWidget = ({ news }) => (
                 <div key={item.id || i} className="flex gap-3 text-sm">
                     <span className="font-mono text-gray-400 shrink-0">{item.date}</span>
                     <span className="text-gray-700 dark:text-gray-300">
-                        {item.type === 'alert' && '🔴 '}
-                        {item.type === 'update' && '🔵 '}
-                        {item.type === 'info' && '🟢 '}
-                        {item.text}
+                        {item.type === 'alert' && '🔴 '} {item.type === 'update' && '🔵 '} {item.type === 'info' && '🟢 '} {item.text}
                     </span>
                 </div>
             )) : <div className="text-gray-400 text-sm">Keine aktuellen Nachrichten.</div>}
@@ -359,34 +376,29 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-    
-    // Register Mode (Simple Toggle for Demo)
     const [isRegistering, setIsRegistering] = useState(false);
-
     if (!isOpen) return null;
-    
     const handleSubmit = async (e) => {
         e.preventDefault(); setError('');
-        
         if (!email.toLowerCase().endsWith('@k5-gmbh.com')) { setError('Zugriff verweigert. Bitte @k5-gmbh.com nutzen.'); return; }
-        
         setIsLoading(true);
         try {
             let user;
-            if (isRegistering) {
-                 const cred = await createUserWithEmailAndPassword(auth, email, password);
-                 user = cred.user;
+            if(auth) {
+                // Real Auth
+                if (isRegistering) { const cred = await createUserWithEmailAndPassword(auth, email, password); user = cred.user; } 
+                else { user = await authService.login(email, password); }
             } else {
-                 user = await authService.login(email, password); 
+                // Mock Auth
+                user = await authService.login(email, password);
             }
             onLogin(user); onClose(); setEmail(''); setPassword(''); 
         } catch (error) { 
-            console.error(error);
-            setError(isRegistering ? "Registrierung fehlgeschlagen (Passwort < 6 Zeichen?)" : "Login fehlgeschlagen."); 
+             console.error(error);
+             setError(isRegistering ? "Registrierung fehlgeschlagen" : "Login fehlgeschlagen."); 
         }
         setIsLoading(false);
     };
-
     return (
         <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-8">
@@ -397,9 +409,9 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
                     {error && <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs p-3 rounded-lg flex items-center gap-2"><AlertTriangle size={14}/>{error}</div>}
                     <button type="submit" disabled={isLoading} className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50">{isLoading ? "Prüfe..." : (isRegistering ? "Registrieren" : "Einloggen")}</button>
                 </form>
-                <div className="mt-4 text-center">
-                    <button onClick={() => setIsRegistering(!isRegistering)} className="text-xs text-blue-500 hover:underline">{isRegistering ? "Zurück zum Login" : "Noch keinen Account? Hier registrieren"}</button>
-                </div>
+                {auth && (
+                    <div className="mt-4 text-center"><button onClick={() => setIsRegistering(!isRegistering)} className="text-xs text-blue-500 hover:underline">{isRegistering ? "Zurück zum Login" : "Noch keinen Account? Hier registrieren"}</button></div>
+                )}
                 <button onClick={onClose} className="w-full mt-4 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">Abbrechen</button>
             </div>
         </div>
@@ -421,11 +433,7 @@ const FeedbackModal = ({ isOpen, onClose, context, user }) => {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6">
         <h3 className="font-bold text-lg mb-2 flex items-center gap-2 text-gray-900 dark:text-white"><Flag className="text-red-500" size={20}/> Problem melden</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Kontext: <span className="font-mono bg-gray-100 dark:bg-gray-700 px-1 rounded">{context}</span></p>
-        <div className="flex gap-2 mb-4">
-            {['outdated', 'error', 'suggestion'].map(t => (
-                <button key={t} onClick={() => setType(t)} className={`flex-1 py-2 px-3 rounded text-sm border capitalize ${type === t ? 'bg-blue-50 border-blue-500 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400'}`}>{t}</button>
-            ))}
-        </div>
+        <div className="flex gap-2 mb-4">{['outdated', 'error', 'suggestion'].map(t => (<button key={t} onClick={() => setType(t)} className={`flex-1 py-2 px-3 rounded text-sm border capitalize ${type === t ? 'bg-blue-50 border-blue-500 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400'}`}>{t}</button>))}</div>
         <textarea className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg p-2 text-sm mb-6" rows="3" placeholder="Kommentar..." value={comment} onChange={(e) => setComment(e.target.value)}></textarea>
         <div className="flex justify-end gap-3"><button onClick={onClose} className="px-4 py-2 text-gray-500 font-medium text-sm">Abbrechen</button><button onClick={handleSubmit} disabled={isSubmitting} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700">{isSubmitting ? 'Sende...' : 'Senden'}</button></div>
       </div>
@@ -452,17 +460,18 @@ const SupportView = ({ openFeedback }) => (
             <div><h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Retailer Definition</h3><div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-200 dark:border-amber-800 text-sm text-amber-900 dark:text-amber-200"><p className="mb-2 font-bold">Unterscheidung ist kritisch für Pricing!</p><ul className="list-disc pl-4 space-y-1"><li><strong>Retailer:</strong> Shops (Online/Stationär), Bildung, Verlage, Hersteller.</li><li><strong>Non-Retailer:</strong> Agenturen, Berater, Dienstleister (Teurer!).</li></ul></div></div>
         </div>
         <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Eskalations-Matrix (L1 - L3)</h3>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-12">
-            <table className="w-full text-sm text-left"><thead className="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 uppercase font-bold"><tr><th className="px-6 py-4">Level</th><th className="px-6 py-4">Zuständigkeit</th><th className="px-6 py-4">Beispiel</th></tr></thead><tbody className="divide-y divide-gray-100 dark:divide-gray-700"><tr className="hover:bg-blue-50/50 dark:hover:bg-gray-700/50"><td className="px-6 py-4 font-bold text-blue-600 dark:text-blue-400">L1 Support <br/><span className="text-xs font-normal text-gray-500 dark:text-gray-400">Happiness Team</span></td><td className="px-6 py-4 dark:text-gray-300">Standard Anfragen, Infos, Umschreibung</td><td className="px-6 py-4 text-gray-500 dark:text-gray-400">"Wo ist mein Ticket?"</td></tr><tr className="hover:bg-blue-50/50 dark:hover:bg-gray-700/50"><td className="px-6 py-4 font-bold text-purple-600 dark:text-purple-400">L2 Support <br/><span className="text-xs font-normal text-gray-500 dark:text-gray-400">Leads</span></td><td className="px-6 py-4 dark:text-gray-300">Kleine Kulanz, Eskalation, Storno (Einzelfall)</td><td className="px-6 py-4 text-gray-500 dark:text-gray-400">Kunde beschwert sich.</td></tr><tr className="hover:bg-blue-50/50 dark:hover:bg-gray-700/50"><td className="px-6 py-4 font-bold text-red-600 dark:text-red-400">L3 Support <br/><span className="text-xs font-normal text-gray-500 dark:text-gray-400">Owner</span></td><td className="px-6 py-4 dark:text-gray-300">Kulanz &gt; 10%, Große Stornos, Legal</td><td className="px-6 py-4 text-gray-500 dark:text-gray-400">Gruppen-Storno, Anwalt.</td></tr></tbody></table>
-        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-12"><table className="w-full text-sm text-left"><thead className="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 uppercase font-bold"><tr><th className="px-6 py-4">Level</th><th className="px-6 py-4">Zuständigkeit</th><th className="px-6 py-4">Beispiel</th></tr></thead><tbody className="divide-y divide-gray-100 dark:divide-gray-700"><tr className="hover:bg-blue-50/50 dark:hover:bg-gray-700/50"><td className="px-6 py-4 font-bold text-blue-600 dark:text-blue-400">L1 Support <br/><span className="text-xs font-normal text-gray-500 dark:text-gray-400">Happiness Team</span></td><td className="px-6 py-4 dark:text-gray-300">Standard Anfragen, Infos, Umschreibung</td><td className="px-6 py-4 text-gray-500 dark:text-gray-400">"Wo ist mein Ticket?"</td></tr><tr className="hover:bg-blue-50/50 dark:hover:bg-gray-700/50"><td className="px-6 py-4 font-bold text-purple-600 dark:text-purple-400">L2 Support <br/><span className="text-xs font-normal text-gray-500 dark:text-gray-400">Leads</span></td><td className="px-6 py-4 dark:text-gray-300">Kleine Kulanz, Eskalation, Storno (Einzelfall)</td><td className="px-6 py-4 text-gray-500 dark:text-gray-400">Kunde beschwert sich.</td></tr><tr className="hover:bg-blue-50/50 dark:hover:bg-gray-700/50"><td className="px-6 py-4 font-bold text-red-600 dark:text-red-400">L3 Support <br/><span className="text-xs font-normal text-gray-500 dark:text-gray-400">Owner</span></td><td className="px-6 py-4 dark:text-gray-300">Kulanz &gt; 10%, Große Stornos, Legal</td><td className="px-6 py-4 text-gray-500 dark:text-gray-400">Gruppen-Storno, Anwalt.</td></tr></tbody></table></div>
         <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Textbausteine (Snippets)</h3>
         <div className="grid gap-4">{SNIPPETS.map((snip, i) => (<div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 overflow-hidden group"><div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 font-bold text-sm flex justify-between items-center cursor-pointer group-hover:bg-gray-100 dark:group-hover:bg-gray-600 text-gray-900 dark:text-white"><span className="flex items-center gap-2">{snip.title} <Flag size={14} className="text-gray-300 hover:text-red-500" onClick={(e) => {e.stopPropagation(); openFeedback(`Snippet: ${snip.title}`)}}/></span><span className="text-xs bg-white dark:bg-gray-800 px-2 py-1 rounded border dark:border-gray-600">Copy</span></div><div className="p-4 text-xs font-mono bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed border-t border-gray-100 dark:border-gray-700">{snip.text}</div></div>))}</div>
     </div>
 );
 
-const AccreditationView = () => (
+const AccreditationView = ({ openFeedback }) => (
     <div className="max-w-4xl mx-auto animate-in slide-in-from-bottom-4 duration-500">
-        <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-6">Akkreditierung & Einlass</h2>
+        <div className="flex justify-between items-start mb-6">
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-6">Akkreditierung & Einlass</h2>
+            <button onClick={() => openFeedback('Akkreditierung')} className="text-gray-400 hover:text-red-500"><Flag size={20}/></button>
+        </div>
         <div className="mb-10"><InfoBox title="Szenario 1: K5 Konferenz (Großevent)" type="info">Bei der großen K5 Future Retail Conference übernehmen wir die Akkreditierung <strong>nicht selbst</strong>.<br/><br/><strong>Dienstleister: Fastlane</strong><br/>Hardware, Personal und Badge-Druck werden komplett extern durch Fastlane abgewickelt.</InfoBox></div>
         <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Szenario 2: Interne Abwicklung</h3>
         <div className="grid md:grid-cols-2 gap-6 mb-12">
@@ -486,22 +495,99 @@ const VivenuView = ({ openFeedback }) => (
         <div className="space-y-6">
              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h3 className="font-bold text-lg mb-4 text-gray-900 dark:text-white">1. Neues Event & Grundeinstellungen</h3><table className="w-full text-sm"><tbody className="divide-y divide-gray-100 dark:divide-gray-700"><tr><td className="py-3 font-bold text-gray-700 dark:text-gray-300">Event Typ</td><td className="py-3 dark:text-gray-200">Einfaches Event</td></tr><tr><td className="py-3 font-bold text-gray-700 dark:text-gray-300">Tickets pro Kauf</td><td className="py-3 dark:text-gray-200">Klein: 3-5 | Konferenz: 20</td></tr><tr><td className="py-3 font-bold text-gray-700 dark:text-gray-300">SEO Index</td><td className="py-3"><span className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-2 py-1 rounded text-xs font-bold">NO INDEX</span></td></tr></tbody></table></div>
              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h3 className="font-bold text-lg mb-4 text-gray-900 dark:text-white">2. & 3. Darstellung</h3><ul className="text-sm space-y-3 text-gray-600 dark:text-gray-300"><li className="flex items-center gap-3"><Check size={14} className="text-green-500"/> Titelbild & Farbe hinterlegen</li><li className="flex items-center gap-3"><Check size={14} className="text-green-500"/> "Invite Only" / Startpreis auf "Verstecken" setzen</li></ul></div>
-             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h3 className="font-bold text-lg mb-4 text-gray-900 dark:text-white">4. Ticketkategorien</h3><InfoBox type="info"><strong>WICHTIG:</strong> "Kategorien" in Vivenu sind NICHT unsere Ticketkategorien. Unsere Kategorien heißen in Vivenu <strong>Tickettypen</strong>.</InfoBox></div>
-             <div className="grid md:grid-cols-2 gap-6"><div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h4 className="font-bold text-sm uppercase text-gray-400 mb-3">6. Daten & Personalisierung</h4><p className="text-sm text-gray-600 dark:text-gray-300"><strong>Personalisierung</strong> ist erforderlich.</p></div><div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-xl border border-red-200 dark:border-red-800"><h4 className="font-bold text-sm uppercase text-red-800 dark:text-red-300 mb-3 flex items-center gap-2"><AlertTriangle size={16}/> 9. Gebühren</h4><p className="text-sm text-red-700 dark:text-red-400 font-bold">NICHTS ANFASSEN!</p></div></div>
-             <h3 className="font-bold text-xl mt-12 mb-4 text-gray-900 dark:text-white">Ready-to-Go Check</h3><div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"><ChecklistItem label="Gefilterte Übersicht des Ticketkaufs erstellen" /><ChecklistItem label="Link in Slack Canvas posten" /><ChecklistItem label="Test Ticket gekauft" /></div>
+             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h3 className="font-bold text-lg mb-4 text-gray-900 dark:text-white">4. Ticketkategorien</h3><InfoBox type="info"><strong>WICHTIG:</strong> "Kategorien" in Vivenu sind NICHT unsere Ticketkategorien. Unsere Kategorien heißen in Vivenu <strong>Tickettypen</strong>.</InfoBox><p className="text-sm text-gray-600 dark:text-gray-300 mt-2">Alle Kategorien und Abfragen müssen strikt nach den <span className="text-blue-600 dark:text-blue-400 font-bold cursor-pointer">Ticket-Guidelines</span> erstellt werden.</p></div>
+             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h3 className="font-bold text-lg mb-4 text-gray-900 dark:text-white">5. Verkauf</h3><table className="w-full text-sm"><tbody className="divide-y divide-gray-100 dark:divide-gray-700"><tr><td className="py-3 font-bold text-gray-700 dark:text-gray-300">Steuern</td><td className="py-3 font-bold text-blue-600 dark:text-blue-400">19% (Pflicht!)</td></tr><tr><td className="py-3 font-bold text-gray-700 dark:text-gray-300">Start</td><td className="py-3 dark:text-gray-200">"Ab sofort"</td></tr><tr><td className="py-3 font-bold text-gray-700 dark:text-gray-300">Rabatte</td><td className="py-3 dark:text-gray-200">Nur nach Absprache</td></tr></tbody></table></div>
+             <div className="grid md:grid-cols-2 gap-6"><div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h4 className="font-bold text-sm uppercase text-gray-400 mb-3">6. Daten & Personalisierung</h4><p className="text-sm text-gray-600 dark:text-gray-300"><strong>Personalisierung</strong> ist erforderlich.</p></div><div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h4 className="font-bold text-sm uppercase text-gray-400 mb-3">7. Geheime Shops</h4><p className="text-sm text-gray-600 dark:text-gray-300">Nur nach Absprache erstellen.</p></div><div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h4 className="font-bold text-sm uppercase text-gray-400 mb-3">8. Ticket Design</h4><p className="text-sm text-gray-600 dark:text-gray-300">Grafiken einfügen und Schriftfarbe anpassen (Lesbarkeit!).</p></div><div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-xl border border-red-200 dark:border-red-800"><h4 className="font-bold text-sm uppercase text-red-800 dark:text-red-300 mb-3 flex items-center gap-2"><AlertTriangle size={16}/> 9. Gebühren</h4><p className="text-sm text-red-700 dark:text-red-400 font-bold">NICHTS ANFASSEN!</p></div><div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h4 className="font-bold text-sm uppercase text-gray-400 mb-3">10. Tracking</h4><p className="text-sm text-gray-600 dark:text-gray-300">Tags entsprechend Tagging-Konzept einfügen.</p></div><div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h4 className="font-bold text-sm uppercase text-gray-400 mb-3">12. Emails</h4><p className="text-sm text-gray-600 dark:text-gray-300">Alle Mails müssen mit dem <strong>Marketing Team</strong> abgesprochen werden.</p></div></div>
+             <h3 className="font-bold text-xl mt-12 mb-4 text-gray-900 dark:text-white">Ready-to-Go Check</h3><div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"><ChecklistItem label="Gefilterte Übersicht des Ticketkaufs erstellen" /><ChecklistItem label="Link in Slack Canvas posten" /><ChecklistItem label="Shop einer weiteren Person zum Double Check geben" /><ChecklistItem label="Test Ticket gekauft" /><ChecklistItem label="Automatisierungen angelegt / gebrieft" /><ChecklistItem label="Shop auf der LP integriert" /></div>
         </div>
     </div>
 );
 
-/* ==========================================================================================
-   5. MAIN APP SHELL
-   ========================================================================================== */
+const WebView = ({ openFeedback }) => (
+   <div className="max-w-4xl mx-auto animate-in slide-in-from-bottom-4 duration-500">
+      <div className="flex justify-between items-start mb-6"><div><h2 className="text-3xl font-black text-gray-900 dark:text-white">Webseite Guidelines</h2><div className="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 px-4 py-2 rounded-lg inline-block text-sm font-medium">Ziel: Performance, Einheitlichkeit, Stabilität.</div></div><button onClick={() => openFeedback('Web Guidelines')} className="text-gray-400 hover:text-red-500"><Flag size={20}/></button></div>
+      <div className="space-y-8">
+         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-gray-900 dark:text-white"><Layout size={20} className="text-blue-600 dark:text-blue-400"/> 01 // Design & Layout</h3><div className="grid md:grid-cols-2 gap-4"><div className="bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-800"><strong className="text-green-800 dark:text-green-400 block mb-1">DO</strong><div className="text-sm dark:text-gray-300">Nutze vordefinierte Blöcke</div><div className="text-sm dark:text-gray-300">Button-Stil "Primary" verwenden</div></div><div className="bg-red-50 dark:bg-red-900/20 p-3 rounded border border-red-200 dark:border-red-800"><strong className="text-red-800 dark:text-red-400 block mb-1">DON'T</strong><div className="text-sm dark:text-gray-300">Eigene Spalten bauen</div><div className="text-sm dark:text-gray-300">Farbe manuell ändern</div></div></div></div>
+         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-gray-900 dark:text-white"><PenTool size={20} className="text-blue-600 dark:text-blue-400"/> 02 // Text & Inhalte</h3><div className="grid md:grid-cols-2 gap-4"><div className="bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-800"><strong className="text-green-800 dark:text-green-400 block mb-1">DO</strong><div className="text-sm dark:text-gray-300">Anrede: <strong>Du/Euch</strong> GROSS</div><div className="text-sm dark:text-gray-300">Struktur: H1 &rarr; H2 &rarr; H3</div></div><div className="bg-red-50 dark:bg-red-900/20 p-3 rounded border border-red-200 dark:border-red-800"><strong className="text-red-800 dark:text-red-400 block mb-1">DON'T</strong><div className="text-sm dark:text-gray-300">Anrede: du/euch klein</div><div className="text-sm dark:text-gray-300">Überspringen: H1 &rarr; H4</div></div></div></div>
+         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-gray-900 dark:text-white"><Image size={20} className="text-blue-600 dark:text-blue-400"/> 03 // Bilder & Medien</h3><div className="grid md:grid-cols-2 gap-4"><div className="bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-800"><strong className="text-green-800 dark:text-green-400 block mb-1">DO</strong><div className="text-sm dark:text-gray-300">Format: <strong>WebP</strong> (immer!)</div><div className="text-sm dark:text-gray-300">Name: <code>team-2026.webp</code></div><div className="text-sm dark:text-gray-300">Update: Bild im CMS <strong>ersetzen</strong></div></div><div className="bg-red-50 dark:bg-red-900/20 p-3 rounded border border-red-200 dark:border-red-800"><strong className="text-red-800 dark:text-red-400 block mb-1">DON'T</strong><div className="text-sm dark:text-gray-300">JPG/PNG (wenn vermeidbar)</div><div className="text-sm dark:text-gray-300"><code>IMG_5920.jpg</code></div><div className="text-sm dark:text-gray-300">Neu hochladen</div></div></div></div>
+         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-gray-900 dark:text-white"><Globe className="text-blue-600 dark:text-blue-400"/> 04 // SEO & URLs</h3><div className="grid md:grid-cols-2 gap-4"><div className="bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-800"><strong className="text-green-800 dark:text-green-400 block mb-1">DO</strong><div className="text-sm dark:text-gray-300"><code>k5.de/podcast</code></div></div><div className="bg-red-50 dark:bg-red-900/20 p-3 rounded border border-red-200 dark:border-red-800"><strong className="text-red-800 dark:text-red-400 block mb-1">DON'T</strong><div className="text-sm dark:text-gray-300"><code>k5.de/k5-podcast</code> (Redundanz)</div></div></div></div>
+         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-gray-900 dark:text-white"><Flag className="text-blue-600 dark:text-blue-400"/> 05 // Workflow</h3><div className="grid md:grid-cols-2 gap-4"><div className="bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-800"><strong className="text-green-800 dark:text-green-400 block mb-1">DO</strong><div className="text-sm dark:text-gray-300">Live erst bei 100% fertig</div></div><div className="bg-red-50 dark:bg-red-900/20 p-3 rounded border border-red-200 dark:border-red-800"><strong className="text-red-800 dark:text-red-400 block mb-1">DON'T</strong><div className="text-sm dark:text-gray-300">Platzhaltertexte live stellen</div></div></div></div>
+         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"><h3 className="font-bold text-xl mt-4 mb-4 text-gray-900 dark:text-white">Go-Live Checkliste</h3><ChecklistItem label="Seite 100% fertig?" /><ChecklistItem label="Anrede geprüft?" /><ChecklistItem label="Bilder optimiert?" /></div>
+      </div>
+   </div>
+);
 
-const WizardComponent = () => {
+const BrandView = ({ openFeedback }) => (
+    <div className="max-w-4xl mx-auto animate-in slide-in-from-bottom-4 duration-500">
+        <div className="flex justify-between items-start mb-6">
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-6">Brand Guidelines</h2>
+            <button onClick={() => openFeedback('Brand Guidelines')} className="text-gray-400 hover:text-red-500"><Flag size={20}/></button>
+        </div>
+        <div className="grid gap-8">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h3 className="font-bold text-lg mb-4 text-gray-900 dark:text-white">Dachmarke Farben</h3><div className="grid grid-cols-2 md:grid-cols-3 gap-4">{K5_COLORS.map((c, i) => (<div key={i} className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600"><div className="h-20" style={{backgroundColor: c.hex}}></div><div className="p-3"><div className="font-bold text-sm text-gray-900 dark:text-white">{c.name}</div><div className="text-xs text-gray-500 font-mono">{c.hex}</div></div></div>))}</div></div>
+            <div className="grid md:grid-cols-2 gap-6"><div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"><h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-gray-900 dark:text-white"><Type className="text-blue-600 dark:text-blue-400"/> Typografie</h3><div className="space-y-4"><div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1">Headline</div><div className="text-2xl font-bold text-gray-900 dark:text-white">Aeonik Bold</div></div><div><div className="text-xs text-gray-400 uppercase tracking-wider mb-1">Body</div><div className="text-lg text-gray-900 dark:text-white">Aeonik Regular</div></div></div></div><div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col justify-center items-center text-center"><h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">Logo Paket</h3><button className="bg-black text-white px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-800 transition-colors">Download .zip</button></div></div>
+        </div>
+    </div>
+);
+
+const VotingView = ({ openFeedback }) => (
+    <div className="max-w-4xl mx-auto animate-in slide-in-from-bottom-4 duration-500">
+        <div className="flex justify-between items-start mb-6">
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-6">Voting Guidelines & Setup</h2>
+            <button onClick={() => openFeedback('Voting System')} className="text-gray-400 hover:text-red-500"><Flag size={20}/></button>
+        </div>
+        <InfoBox title="Zielsetzung" type="info">Fairer Wettbewerb durch intelligente Verifizierung (Double-Opt-In). <strong>Ein User = Eine Stimme</strong> pro Kategorie.</InfoBox>
+        <h3 className="text-xl font-bold mb-6 mt-12 text-gray-900 dark:text-white">01 // Der User Flow</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-12"><div className="flex flex-col md:flex-row gap-4 items-stretch text-center"><div className="flex-1 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600"><div className="font-bold text-lg mb-1 dark:text-white">1. Vote</div><div className="text-sm text-gray-500 dark:text-gray-400">User wählt Favorit & gibt Email ein.</div></div><div className="flex items-center justify-center text-gray-300 dark:text-gray-600"><ArrowRight/></div><div className="flex-1 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600"><div className="font-bold text-lg mb-1 dark:text-white">2. Check</div><div className="text-sm text-gray-500 dark:text-gray-400">Backend prüft Status (Neu/Bekannt).</div></div><div className="flex items-center justify-center text-gray-300 dark:text-gray-600"><ArrowRight/></div><div className="flex-1 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800 text-blue-800 dark:text-blue-200"><div className="font-bold text-lg mb-1">3. Verify</div><div className="text-sm">Bei neuen Usern: DOI-Mail senden.</div></div></div></div>
+        <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">02 // Tech Stack</h3>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8"><div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center"><FileText className="mx-auto mb-2 text-gray-400" size={24}/><div className="font-bold text-sm dark:text-white">Typeform</div><div className="text-xs text-gray-500 dark:text-gray-400">Frontend</div></div><div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center"><Cpu className="mx-auto mb-2 text-blue-600" size={24}/><div className="font-bold text-sm dark:text-white">n8n</div><div className="text-xs text-gray-500 dark:text-gray-400">Logic</div></div><div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center"><Send className="mx-auto mb-2 text-green-600" size={24}/><div className="font-bold text-sm dark:text-white">Brevo</div><div className="text-xs text-gray-500 dark:text-gray-400">Mail</div></div><div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center"><Database className="mx-auto mb-2 text-green-700" size={24}/><div className="font-bold text-sm dark:text-white">Sheets</div><div className="text-xs text-gray-500 dark:text-gray-400">DB</div></div><div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center"><BarChart className="mx-auto mb-2 text-yellow-600" size={24}/><div className="font-bold text-sm dark:text-white">Looker</div><div className="text-xs text-gray-500 dark:text-gray-400">Report</div></div></div>
+        <h3 className="text-xl font-bold mb-4 mt-12 text-gray-900 dark:text-white">03 // Setup Requirements</h3><div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-12"><ul className="space-y-4"><li className="flex items-start gap-3"><FileText size={16}/><div className="flex-1"><strong className="block text-gray-900 dark:text-white">Typeform</strong><span className="text-sm text-gray-600 dark:text-gray-400">Erstelle <strong>ein Formular pro Kategorie</strong> (nicht alles in einem), um die Daten sauber zu trennen.</span></div></li><li className="flex items-start gap-3"><Database size={16}/><div className="flex-1"><strong className="block text-gray-900 dark:text-white">Google Sheets</strong><span className="text-sm text-gray-600 dark:text-gray-400">Nutze <strong>ein Master-Sheet</strong> für alle eingehenden Votes, um Duplikate kategorieübergreifend zu prüfen.</span></div></li><li className="flex items-start gap-3"><Send size={16}/><div className="flex-1"><strong className="block text-gray-900 dark:text-white">Brevo Templates</strong><span className="text-sm text-gray-600 dark:text-gray-400 block mb-1">Erstelle folgende 3 E-Mail-Vorlagen:</span><ul className="text-sm list-disc pl-4 space-y-1 text-gray-500 dark:text-gray-400"><li><strong>Verifizierung (DOI):</strong> "Bitte bestätige deine Stimme."</li><li><strong>Bestätigung:</strong> "Danke, deine Stimme wurde gezählt."</li><li><strong>Ablehnung:</strong> "Sorry, deine Stimme zählt nicht, da du in dieser Kategorie bereits abgestimmt hast."</li></ul></div></li></ul></div>
+        <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">04 // n8n Blueprint Template</h3><p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Kopiere diesen Code und füge ihn in n8n (Strg+V) ein, um den Workflow zu importieren.</p><CodeBlock code={VOTING_BLUEPRINT} /><h3 className="text-xl font-bold mb-4 mt-12 text-gray-900 dark:text-white">05 // Setup Checkliste</h3><div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-12"><ChecklistItem label="Typeforms erstellt & Webhook an n8n gesetzt?" /><ChecklistItem label="Brevo Templates (DOI, Bestätigung, Ablehnung) aktiv?" /><ChecklistItem label="n8n Workflow auf 'Active' geschaltet?" /><ChecklistItem label="Google Sheet mit Looker Studio verbunden?" /></div>
+    </div>
+);
+
+// --- MAIN APP ---
+
+const Wizard = () => {
     const [step, setStep] = useState(1);
+    const [selectedTools, setSelectedTools] = useState([]);
+    const [automationMode, setAutomationMode] = useState('');
+    const [toolDescriptions, setToolDescriptions] = useState({});
+
+    // START FULL WIZARD LOGIC RE-INSERTION
     const next = (s) => setStep(s);
-    if(step === 1) return <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-xl"><h3 className="text-2xl font-bold dark:text-white mb-4">1. Wie oft führst du den Prozess aus?</h3><button onClick={()=>next(2)} className="bg-blue-600 text-white px-6 py-2 rounded-full">Täglich</button></div>;
-    return <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-xl"><h3 className="text-2xl font-bold dark:text-white mb-4">Ergebnis</h3><p className="dark:text-gray-300">Automatisierung empfohlen!</p><button onClick={()=>setStep(1)} className="text-blue-500 mt-4 underline">Neu starten</button></div>;
+    const reset = () => { setStep(1); setSelectedTools([]); setToolDescriptions({}); setAutomationMode(''); };
+    const toggleTool = (t) => setSelectedTools(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
+    const updateDescription = (t, v) => setToolDescriptions(prev => ({...prev, [t]: v}));
+    const moveTool = (index, direction) => {
+        const newTools = [...selectedTools];
+        if (index + direction < 0 || index + direction >= newTools.length) return;
+        const temp = newTools[index]; newTools[index] = newTools[index + direction]; newTools[index + direction] = temp;
+        setSelectedTools(newTools);
+    };
+    const generateN8nJson = () => {
+        const nodes = selectedTools.map((tool, index) => ({
+          parameters: {}, name: tool, type: "n8n-nodes-base." + tool.toLowerCase().replace(' ', ''),
+          typeVersion: 1, position: [250 + (index * 200), 300], notes: toolDescriptions[tool] || (index === 0 ? "Trigger" : "Action")
+        }));
+        nodes.unshift({ parameters: {}, name: "Start", type: "n8n-nodes-base.start", typeVersion: 1, position: [50, 300] });
+        const connections = {};
+        for (let i = 0; i < nodes.length - 1; i++) { connections[nodes[i].name] = { main: [[{ node: nodes[i+1].name, type: "main", index: 0 }]] }; }
+        return JSON.stringify({ nodes, connections }, null, 2);
+    };
+    
+    return (
+    <div className="bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl p-8 text-center max-w-2xl mx-auto my-8 min-h-[400px] flex flex-col justify-center">
+      {step === 1 && (<div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><h3 className="text-2xl font-black text-blue-900 dark:text-blue-300 mb-6">1. Wie oft führst du den Prozess aus?</h3><div className="flex flex-wrap gap-4 justify-center"><button onClick={() => next(2)} className="px-6 py-3 bg-white dark:bg-gray-700 border-2 border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300 font-bold rounded-full hover:bg-blue-600 hover:text-white transition-all">Täglich / Wöchentlich</button><button onClick={() => next(2)} className="px-6 py-3 bg-white dark:bg-gray-700 border-2 border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300 font-bold rounded-full hover:bg-blue-600 hover:text-white transition-all">Monatlich (viele Daten)</button><button onClick={() => next(99)} className="px-6 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 font-bold rounded-full hover:border-gray-400 transition-all">Selten (1-2x Jahr)</button></div></div>)}
+      {step === 2 && (<div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><h3 className="text-2xl font-black text-blue-900 dark:text-blue-300 mb-6">2. Folgt der Prozess festen Regeln?</h3><div className="bg-white dark:bg-gray-700 p-4 rounded-lg text-left mb-6 text-sm text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 inline-block"><strong>Beispiel für JA:</strong> "Wenn E-Mail Betreff 'Rechnung' enthält &rarr; speichere Anhang."</div><div className="flex flex-wrap gap-4 justify-center"><button onClick={() => next(3)} className="px-6 py-3 bg-white dark:bg-gray-700 border-2 border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300 font-bold rounded-full hover:bg-blue-600 hover:text-white transition-all">Ja, feste Logik</button><button onClick={() => next(98)} className="px-6 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 font-bold rounded-full hover:border-gray-400 transition-all">Nein, Bauchgefühl nötig</button></div></div>)}
+      {step === 3 && (<div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><h3 className="text-2xl font-black text-blue-900 dark:text-blue-300 mb-2">3. Welche Tools sind beteiligt?</h3><div className="grid grid-cols-2 gap-3 text-left mb-6 max-w-md mx-auto">{AVAILABLE_TOOLS.map(tool => (<div key={tool} onClick={() => toggleTool(tool)} className={`p-3 border rounded-lg cursor-pointer flex items-center justify-between transition-all ${selectedTools.includes(tool) ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-500' : 'border-gray-200 dark:border-gray-600 dark:bg-gray-700 hover:border-blue-300'}`}><span className="font-medium text-sm dark:text-gray-200">{tool}</span>{selectedTools.includes(tool) && <Check size={16} className="text-blue-600 dark:text-blue-400"/>}</div>))}</div><div className="flex justify-center"><button onClick={() => selectedTools.length > 0 ? next(4) : alert('Bitte wähle mindestens ein Tool.')} className="px-8 py-3 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">API Check & Weiter &rarr;</button></div></div>)}
+      {step === 4 && (<div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><h3 className="text-2xl font-black text-blue-900 dark:text-blue-300 mb-6">4. Wie komplex ist der Ablauf?</h3><div className="flex flex-col gap-4 max-w-sm mx-auto"><button onClick={() => { setAutomationMode('zapier'); next(5); }} className="p-4 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl hover:border-blue-600 hover:shadow-md transition-all text-left group"><div className="flex items-center gap-2 font-bold text-lg mb-1 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400"><Zap size={20}/> Einfach / Linear</div><div className="text-xs text-gray-500 dark:text-gray-400">"Wenn das passiert, dann mach das." (Z.B. Neuer Lead &rarr; E-Mail senden)</div></button><button onClick={() => { setAutomationMode('n8n'); next(5); }} className="p-4 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl hover:border-blue-600 hover:shadow-md transition-all text-left group"><div className="flex items-center gap-2 font-bold text-lg mb-1 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400"><Cpu size={20}/> Komplex / Logik</div><div className="text-xs text-gray-500 dark:text-gray-400">Mehrere Schritte, Bedingungen, Berechnungen oder DSGVO-kritische Daten.</div></button></div></div>)}
+      {step === 5 && (<div className="animate-in fade-in slide-in-from-bottom-4 duration-500 text-left"><h3 className="text-2xl font-black text-blue-900 dark:text-blue-300 mb-2 text-center">5. Konfigurator ({automationMode})</h3><div className="space-y-4 mb-8">{selectedTools.map((tool, index) => (<div key={tool} className="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600 flex flex-col md:flex-row gap-4 items-center"><div className="flex items-center gap-3 w-full md:w-1/3"><div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 flex items-center justify-center font-bold flex-shrink-0">{index + 1}</div><div className="flex flex-col"><span className="font-bold dark:text-white">{tool}</span><span className={`text-xs uppercase px-2 py-0.5 rounded w-max ${index === 0 ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300' : 'bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-300'}`}>{index === 0 ? '⚡ Trigger' : '▶ Action'}</span></div><div className="flex flex-col ml-auto"><button onClick={() => moveTool(index, -1)} disabled={index === 0} className="text-gray-400 hover:text-blue-600 disabled:opacity-20 disabled:hover:text-gray-400"><ChevronUp size={16} /></button><button onClick={() => moveTool(index, 1)} disabled={index === selectedTools.length - 1} className="text-gray-400 hover:text-blue-600 disabled:opacity-20 disabled:hover:text-gray-400"><ChevronDown size={16} /></button></div></div><input type="text" placeholder={index === 0 ? "Z.B. Neuer Kontakt erstellt" : "Z.B. Nachricht in Channel senden"} className="flex-1 p-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800 dark:text-white rounded text-sm w-full" value={toolDescriptions[tool] || ''} onChange={(e) => updateDescription(tool, e.target.value)} /></div>))}</div><div className="flex justify-center"><button onClick={() => next(6)} className="px-8 py-3 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center gap-2">{automationMode === 'n8n' ? <Cpu size={18}/> : <Zap size={18}/>} Blueprint generieren</button></div></div>)}
+      {step === 6 && (<div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><div className="mb-6"><div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-4"><Check size={32}/></div><h3 className="text-2xl font-black text-gray-900 dark:text-white">Dein {automationMode === 'n8n' ? 'Workflow Blueprint' : 'Rezept'} ist fertig!</h3></div>{automationMode === 'n8n' ? (<div className="text-left"><p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center">Kopiere diesen JSON-Code und füge ihn direkt in n8n (Strg+V) ein.</p><CodeBlock code={generateN8nJson()} label="n8n Workflow JSON" /></div>) : (<div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 text-left mb-6"><h4 className="font-bold text-lg mb-4 border-b dark:border-gray-700 pb-2 flex items-center gap-2 text-gray-900 dark:text-white"><Zap className="text-orange-500"/> Zapier Rezept</h4><ol className="space-y-4 relative border-l-2 border-gray-100 dark:border-gray-700 ml-3 pl-6">{selectedTools.map((tool, i) => (<li key={i} className="relative"><span className="absolute -left-[31px] top-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">{i+1}</span><div className="font-bold text-gray-900 dark:text-white">{tool}</div><div className="text-sm text-gray-600 dark:text-gray-400">{toolDescriptions[tool] || (i===0 ? "Trigger Event wählen" : "Action definieren")}</div></li>))}</ol></div>)}<button onClick={reset} className="mt-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm underline">Neuen Check starten</button></div>)}
+      {(step === 99 || step === 98) && (<div className="text-center"><div className="text-4xl mb-4">{step===99?'❌':'🧠'}</div><h3 className="font-bold text-xl mb-2 text-gray-900 dark:text-white">{step===99?'Nicht automatisieren':'Manuelle Bearbeitung empfohlen'}</h3><p className="text-gray-600 dark:text-gray-400 mb-6">{step===99?'Der Aufwand lohnt sich nicht für so seltene Fälle.':'Prozesse, die "Bauchgefühl" brauchen, sind schwer zu automatisieren.'}</p><button onClick={reset} className="underline text-gray-500 hover:text-blue-600">Neu starten</button></div>)}
+    </div>
+  );
+  // END FULL WIZARD LOGIC
 };
 
 export default function K5HandbookApp() {
@@ -520,62 +606,46 @@ export default function K5HandbookApp() {
   
   // NEW: State for News Feed
   const [newsFeed, setNewsFeed] = useState([]);
-  // NEW: State for Admin Input
   const [newNewsText, setNewNewsText] = useState('');
   const [newNewsType, setNewNewsType] = useState('info');
 
   useEffect(() => {
       if (localStorage.getItem('k5_dark_mode') === 'true') setDarkMode(true);
-      
-      // Load News
       newsApi.getAll().then(setNewsFeed);
-
       const storedUser = localStorage.getItem('k5_session_user');
       if (storedUser) {
            const u = JSON.parse(storedUser);
-           // In real app, we wait for onAuthStateChanged
-           // setUser(u); 
+           setUser(u); 
+           userApi.getUserData(u.name).then(data => { setUserFavorites(data.favorites); setUserReadHistory(data.readHistory); });
       }
-      
-      // REAL FIREBASE AUTH LISTENER
       if(auth) {
           const unsubscribe = onAuthStateChanged(auth, async (u) => {
               if(u) {
-                 // Fetch extra user data from Firestore
                  const userData = await userApi.getUserData(u.uid);
-                 // Determine Role - using MASTER_ADMIN_EMAIL constant
                  const role = u.email === MASTER_ADMIN_EMAIL ? 'admin' : userData.role || 'user'; 
-                 
                  setUser({ ...u, name: u.email.split('@')[0], role: role });
                  setUserFavorites(userData.favorites);
                  setUserReadHistory(userData.readHistory);
-              } else {
-                 setUser(null);
-                 setUserFavorites([]);
-                 setUserReadHistory({});
-              }
+              } else { setUser(null); setUserFavorites([]); setUserReadHistory({}); }
           });
           return () => unsubscribe();
       }
-
   }, []);
 
   const toggleDarkMode = () => { const newVal = !darkMode; setDarkMode(newVal); localStorage.setItem('k5_dark_mode', newVal); };
-  const handleLoginSuccess = (u) => { 
-      // The onAuthStateChanged listener will pick this up in a real app
-  };
-  const handleLogout = () => { authService.logout(); };
+  const handleLoginSuccess = (u) => { /* handled by listener */ };
+  const handleLogout = () => { authService.logout(); setUser(null); localStorage.removeItem('k5_session_user'); };
   
   const toggleFavorite = (cardId) => {
       if (!user) { setLoginModalOpen(true); return; }
       const newFavs = userFavorites.includes(cardId) ? userFavorites.filter(id => id !== cardId) : [...userFavorites, cardId];
       setUserFavorites(newFavs);
-      userApi.saveFavorites(user.uid, newFavs);
+      userApi.saveFavorites(user.name || user.uid, newFavs);
   };
 
   const handleNav = (tab) => {
     setActiveTab(tab); setMobileMenuOpen(false); setSearchQuery(''); window.scrollTo(0, 0);
-    if (user) { userApi.markSectionRead(user.uid, tab).then(() => { setUserReadHistory({ ...userReadHistory, [tab]: new Date().toISOString() }); }); }
+    if (user) { userApi.markSectionRead(user.name || user.uid, tab).then(() => { setUserReadHistory({ ...userReadHistory, [tab]: new Date().toISOString() }); }); }
   };
 
   const hasUpdate = (sectionId) => {
@@ -586,59 +656,38 @@ export default function K5HandbookApp() {
       return !lastRead || new Date(section.lastUpdated) > new Date(lastRead);
   };
 
-  // Admin Actions
   const handleAddNews = async () => {
       if(!newNewsText) return;
       const today = new Date();
       const dateStr = `${String(today.getDate()).padStart(2, '0')}.${String(today.getMonth() + 1).padStart(2, '0')}.`;
-      
       const newItem = { date: dateStr, text: newNewsText, type: newNewsType };
       const updated = await newsApi.add(newItem);
       setNewsFeed(updated);
       setNewNewsText('');
   };
 
-  const handleDeleteNews = async (id) => {
-      const updated = await newsApi.delete(id);
-      setNewsFeed(updated);
-  };
+  const handleDeleteNews = async (id) => { const updated = await newsApi.delete(id); setNewsFeed(updated); };
 
-  // Search Logic (Fuzzy)
   useEffect(() => {
-    if (searchQuery.length < 2) {
-      setSearchResults([]);
-      return;
-    }
+    if (searchQuery.length < 2) { setSearchResults([]); return; }
     const lowerQ = searchQuery.toLowerCase();
-    
-    // Build dynamic index from config and snippets
     let searchable = [
         ...SECTIONS_CONFIG.map(s => ({ id: s.id, title: s.title, text: s.desc, section: 'Bereich' })),
         ...SNIPPETS.map(s => ({ id: 'support', title: s.title, text: s.text, section: 'Snippet' })),
         { id: 'support', title: 'Preise', text: 'ticket preise retailer early bird', section: 'Support' },
         { id: 'accreditation', title: 'Scanner', text: 'einlass akkreditierung app', section: 'Events' }
     ];
-
     const results = searchable.filter(item => {
-        // 1. Exact Match
         if (item.title.toLowerCase().includes(lowerQ) || (item.text && item.text.toLowerCase().includes(lowerQ))) return true;
-        
-        // 2. Fuzzy
         if (!item.text) return false;
         const words = (item.title + " " + item.text).toLowerCase().split(" ");
-        return words.some(word => {
-            if (Math.abs(word.length - lowerQ.length) > 2) return false; 
-            return levenshteinDistance(word, lowerQ) <= 2;
-        });
+        return words.some(word => Math.abs(word.length - lowerQ.length) <= 2 && levenshteinDistance(word, lowerQ) <= 2);
     });
     setSearchResults(results);
   }, [searchQuery]);
 
   useEffect(() => {
-    if (activeTab === 'admin' && user?.role === 'admin') {
-        feedbackApi.getAll().then(setAdminFeedbackList);
-        newsApi.getAll().then(setNewsFeed); 
-    }
+    if (activeTab === 'admin' && user?.role === 'admin') { feedbackApi.getAll().then(setAdminFeedbackList); newsApi.getAll().then(setNewsFeed); }
   }, [activeTab, user]);
 
   const openFeedback = (ctx) => { setFeedbackContext(ctx); setFeedbackModalOpen(true); };
@@ -677,16 +726,7 @@ export default function K5HandbookApp() {
           
           <div className="flex items-center gap-4">
             {/* SEARCH */}
-             <div className="relative hidden md:block group">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-200 group-focus-within:text-blue-600 transition-colors"><Search size={16} /></div>
-              <input id="searchInput" type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-blue-800/50 dark:bg-blue-950/50 border border-blue-400/30 rounded-full pl-10 pr-4 py-2 text-sm text-white placeholder-blue-200 focus:bg-white focus:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 w-48 transition-all focus:w-64"/>
-              {searchResults.length > 0 && (
-                <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-xl text-gray-800 dark:text-white overflow-hidden z-50 border border-gray-100 dark:border-gray-700">
-                  {searchResults.map((res, idx) => (<div key={idx} onClick={() => handleNav(res.id)} className="p-3 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0"><div className="font-bold text-sm text-blue-600 dark:text-blue-400">{res.title}</div><div className="text-xs text-gray-500 dark:text-gray-400">in {res.section}</div></div>))}
-                </div>
-              )}
-            </div>
-
+             <div className="relative hidden md:block group"><div className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-200 group-focus-within:text-blue-600 transition-colors"><Search size={16} /></div><input id="searchInput" type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-blue-800/50 dark:bg-blue-950/50 border border-blue-400/30 rounded-full pl-10 pr-4 py-2 text-sm text-white placeholder-blue-200 focus:bg-white focus:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 w-48 transition-all focus:w-64"/>{searchResults.length > 0 && (<div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-xl text-gray-800 dark:text-white overflow-hidden z-50 border border-gray-100 dark:border-gray-700">{searchResults.map((res, idx) => (<div key={idx} onClick={() => handleNav(res.id)} className="p-3 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0"><div className="font-bold text-sm text-blue-600 dark:text-blue-400">{res.title}</div><div className="text-xs text-gray-500 dark:text-gray-400">in {res.section}</div></div>))}</div>)}</div>
              <button onClick={toggleDarkMode} className="text-white hover:text-blue-200 transition p-1">{darkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>
              {user?.role === 'admin' && <button onClick={() => handleNav('admin')} className="text-white hover:text-blue-200 transition"><Settings size={20} /></button>}
              {user ? (<button onClick={handleLogout} className="text-white hover:text-blue-200"><LogOut size={20}/></button>) : (<button onClick={() => setLoginModalOpen(true)} className="text-white hover:text-blue-200 flex items-center gap-2 text-sm font-bold"><LogIn size={18}/> Login</button>)}
@@ -698,12 +738,7 @@ export default function K5HandbookApp() {
       <FeedbackModal isOpen={feedbackModalOpen} onClose={() => setFeedbackModalOpen(false)} context={feedbackContext} user={user} />
       <LoginModal isOpen={loginModalOpen} onClose={() => setLoginModalOpen(false)} onLogin={handleLoginSuccess} />
 
-      {mobileMenuOpen && (
-          <div className="fixed inset-0 bg-white dark:bg-gray-900 z-40 pt-24 px-6 overflow-y-auto lg:hidden text-gray-800 dark:text-white">
-             {/* Mobile Menu Content... */}
-             <div className="text-center p-4">Menu Content</div>
-          </div>
-      )}
+      {mobileMenuOpen && <div className="fixed inset-0 bg-white dark:bg-gray-900 z-40 pt-24 px-6 overflow-y-auto lg:hidden text-gray-800 dark:text-white"><div className="text-center p-4">Menu Content (Mobile)</div></div>}
 
       <main className="container mx-auto px-4 lg:px-8 py-12 pt-32 max-w-6xl flex-grow">
         {activeTab === 'home' && (
@@ -718,52 +753,32 @@ export default function K5HandbookApp() {
             {user && favoriteCards.length > 0 && (
                 <div className="mb-12"><h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2"><Star className="text-yellow-400 fill-yellow-400" size={24}/> Deine Favoriten</h3><div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">{favoriteCards.map((sec) => (<Card key={sec.id} icon={sec.icon} title={sec.title} desc={sec.desc} onClick={() => handleNav(sec.id)} isFavorite={true} onToggleFavorite={() => toggleFavorite(sec.id)} hasUpdate={hasUpdate(sec.id)}/>))}</div><div className="h-px bg-gray-200 dark:bg-gray-700 w-full my-12"></div></div>
             )}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {SECTIONS_CONFIG.filter(sec => sec.id !== 'exhibitor').map((sec) => (<Card key={sec.id} icon={sec.icon} title={sec.title} desc={sec.desc} onClick={() => handleNav(sec.id)} isFavorite={userFavorites.includes(sec.id)} onToggleFavorite={user ? () => toggleFavorite(sec.id) : null} hasUpdate={hasUpdate(sec.id)}/>))}
-            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">{SECTIONS_CONFIG.filter(sec => sec.id !== 'exhibitor').map((sec) => (<Card key={sec.id} icon={sec.icon} title={sec.title} desc={sec.desc} onClick={() => handleNav(sec.id)} isFavorite={userFavorites.includes(sec.id)} onToggleFavorite={user ? () => toggleFavorite(sec.id) : null} hasUpdate={hasUpdate(sec.id)}/>))}</div>
           </div>
         )}
 
         {/* PAGE COMPONENTS */}
         {activeTab === 'support' && <SupportView openFeedback={openFeedback} />}
         {activeTab === 'vivenu' && <VivenuView openFeedback={openFeedback} />}
-        {activeTab === 'accreditation' && <AccreditationView />}
-        {activeTab === 'automation' && <div className="animate-in zoom-in duration-300"><div className="text-center mb-8"><h2 className="text-3xl font-black text-gray-900 dark:text-white">Automation Check</h2></div><WizardComponent /></div>}
+        {activeTab === 'accreditation' && <AccreditationView openFeedback={openFeedback} />}
+        {activeTab === 'web' && <WebView openFeedback={openFeedback} />}
+        {activeTab === 'brand' && <BrandView openFeedback={openFeedback} />}
+        {activeTab === 'votings' && <VotingView openFeedback={openFeedback} />}
+        {activeTab === 'automation' && <div className="animate-in zoom-in duration-300"><div className="text-center mb-8"><h2 className="text-3xl font-black text-gray-900 dark:text-white">Automation Check</h2></div><Wizard /></div>}
         {activeTab === 'tickets' && <div className="text-center py-20"><div className="inline-block p-6 bg-blue-50 dark:bg-blue-900/20 rounded-full mb-6"><Clock size={48} className="text-blue-600 dark:text-blue-400" /></div><h2 className="text-3xl font-black text-gray-900 dark:text-white mb-4">Ticket Logik 2026</h2><p className="text-xl text-gray-500 dark:text-gray-400 font-medium">Coming Soon</p></div>}
         
-        {/* Admin View */}
         {activeTab === 'admin' && (
             <div className="max-w-4xl mx-auto animate-in fade-in duration-300">
                 {user?.role === 'admin' ? (
                     <>
                         <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-6 flex items-center gap-3"><Settings/> Admin Dashboard</h2>
-                        
-                        {/* NEWS MANAGEMENT */}
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
                             <h3 className="font-bold text-lg mb-4 text-gray-900 dark:text-white flex items-center gap-2"><Bell size={18}/> News Management</h3>
-                            <div className="flex gap-2 mb-4">
-                                <input type="text" placeholder="Neue Nachricht..." className="flex-1 border p-2 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={newNewsText} onChange={e => setNewNewsText(e.target.value)} />
-                                <select className="border p-2 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={newNewsType} onChange={e => setNewNewsType(e.target.value)}>
-                                    <option value="info">Info (Grün)</option>
-                                    <option value="alert">Alert (Rot)</option>
-                                    <option value="update">Update (Blau)</option>
-                                </select>
-                                <button onClick={handleAddNews} className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-1 hover:bg-blue-700"><Plus size={16}/> Hinzufügen</button>
-                            </div>
-                            <div className="space-y-2">
-                                {newsFeed.map(n => (
-                                    <div key={n.id} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded border border-gray-100 dark:border-gray-600">
-                                        <span className="text-sm dark:text-gray-200"><span className="font-mono text-gray-400 mr-2">{n.date}</span>{n.text} <span className="text-xs uppercase bg-gray-200 dark:bg-gray-600 px-1 rounded ml-2">{n.type}</span></span>
-                                        <button onClick={() => handleDeleteNews(n.firebaseId || n.id)} className="text-red-400 hover:text-red-600"><Trash2 size={16}/></button>
-                                    </div>
-                                ))}
-                            </div>
+                            <div className="flex gap-2 mb-4"><input type="text" placeholder="Neue Nachricht..." className="flex-1 border p-2 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={newNewsText} onChange={e => setNewNewsText(e.target.value)} /><select className="border p-2 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={newNewsType} onChange={e => setNewNewsType(e.target.value)}><option value="info">Info</option><option value="alert">Alert</option><option value="update">Update</option></select><button onClick={handleAddNews} className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-1 hover:bg-blue-700"><Plus size={16}/> Hinzufügen</button></div>
+                            <div className="space-y-2">{newsFeed.map(n => (<div key={n.id} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded border border-gray-100 dark:border-gray-600"><span className="text-sm dark:text-gray-200"><span className="font-mono text-gray-400 mr-2">{n.date}</span>{n.text} <span className="text-xs uppercase bg-gray-200 dark:bg-gray-600 px-1 rounded ml-2">{n.type}</span></span><button onClick={() => handleDeleteNews(n.firebaseId || n.id)} className="text-red-400 hover:text-red-600"><Trash2 size={16}/></button></div>))}</div>
                         </div>
-
                         <h3 className="font-bold text-lg mb-4 text-gray-900 dark:text-white flex items-center gap-2"><MessageSquare size={18}/> Feedback Log</h3>
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                            {adminFeedbackList.length === 0 ? <div className="p-8 text-center text-gray-500">Noch kein Feedback vorhanden. 🎉</div> : <div className="divide-y divide-gray-100 dark:divide-gray-700">{adminFeedbackList.map(item => (<div key={item.id} className="p-4 flex gap-4"><div className="text-2xl pt-1">{item.type === 'outdated' ? '⏳' : item.type === 'error' ? '🐛' : '💡'}</div><div className="flex-1"><div className="flex justify-between mb-1"><span className="font-bold text-gray-900 dark:text-white uppercase text-xs tracking-wider bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">{item.type}</span><span className="text-xs text-gray-400">{item.createdAt.split('T')[0]} • von {item.userName || 'Gast'}</span></div><div className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-1">{item.context}</div><div className="text-sm text-gray-600 dark:text-gray-400">{item.comment}</div></div></div>))}</div>}
-                        </div>
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">{adminFeedbackList.length === 0 ? <div className="p-8 text-center text-gray-500">Noch kein Feedback vorhanden. 🎉</div> : <div className="divide-y divide-gray-100 dark:divide-gray-700">{adminFeedbackList.map(item => (<div key={item.id} className="p-4 flex gap-4"><div className="text-2xl pt-1">{item.type === 'outdated' ? '⏳' : item.type === 'error' ? '🐛' : '💡'}</div><div className="flex-1"><div className="flex justify-between mb-1"><span className="font-bold text-gray-900 dark:text-white uppercase text-xs tracking-wider bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">{item.type}</span><span className="text-xs text-gray-400">{item.createdAt.split('T')[0]} • von {item.userName || 'Gast'}</span></div><div className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-1">{item.context}</div><div className="text-sm text-gray-600 dark:text-gray-400">{item.comment}</div></div></div>))}</div>}</div>
                     </>
                 ) : <div className="text-center py-20"><div className="text-red-500 mb-4 flex justify-center"><Lock size={48}/></div><h2 className="text-2xl font-bold text-gray-900 dark:text-white">Zugriff verweigert</h2></div>}
             </div>

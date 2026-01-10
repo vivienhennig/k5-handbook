@@ -17,12 +17,8 @@ jobs:
           port: 22
           # Was soll auf dem Server passieren?
           script: |
-            # 1. In den Ordner gehen
+          script: |
             cd k5-handbook
-            
-            # 2. Den neuesten Code von GitHub holen
             git pull origin main
-            
-            # 3. Docker neu bauen und im Hintergrund starten
-            # (Das --build Flag sorgt dafür, dass Änderungen im React-Code übernommen werden)
-            docker-compose up -d --build
+            # Hier das sudo hinzufügen:
+            sudo docker-compose up -d --build

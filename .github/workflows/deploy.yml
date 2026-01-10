@@ -17,7 +17,6 @@ jobs:
           port: 22
           # Was soll auf dem Server passieren?
           script: |
-          script: |
             cd k5-handbook
             git pull origin main
             # Hier das sudo hinzufügen:

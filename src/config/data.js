@@ -52,3 +52,118 @@ export const INITIAL_NEWS = [
     { id: 2, date: "14.01.", text: "WLAN-Passwort für die Akkreditierung geändert.", type: "alert" },
     { id: 3, date: "10.01.", text: "Handbook v1.0 ist live! 🎉", type: "info" }
 ];
+
+// --- URLAUBS KONFIGURATION ---
+
+export const STANDARD_VACATION_DAYS = 30;
+
+// Deutsche Feiertage (Format: MM-DD oder YYYY-MM-DD)
+export const PUBLIC_HOLIDAYS = [
+    "01-01", "01-06", "05-01", "10-03", "11-01", "12-24" ,"12-25", "12-26", "12-31",
+    // Bewegliche Feiertage 2025
+    "2025-04-18", "2025-04-21", "2025-05-29", "2025-06-09", "2025-06-19",
+    // Bewegliche Feiertage 2026
+    "2026-04-03", "2026-04-06", "2026-05-14", "2026-05-25", "2026-06-04"
+];
+
+// Urlaubs-Typen Definition & Faktor
+export const VACATION_TYPES = {
+    standard: { label: "Urlaub (Ganztags)", factor: 1 },
+    half: { label: "Urlaub (Halber Tag)", factor: 0.5 }, 
+    workation: { label: "Workation (50% Anrechnung)", factor: 0.5 } 
+};
+
+// Farben für Abteilungen (Tailwind Klassen)
+export const DEPARTMENT_COLORS = {
+    'Event': { 
+        classes: 'bg-[oklch(70.2%_0.183_293.541)] text-white border-transparent' 
+    },
+    'Sales': { 
+        // Achtung: Da der Hintergrund sehr helles Gelb ist, nutzen wir hier dunkle Schrift!
+        classes: 'bg-[oklch(90.5%_0.182_98.111)] text-gray-900 border-transparent' 
+    },
+    'Geschäftsführung': { 
+        classes: 'bg-[oklch(55.3%_0.013_58.071)] text-white border-transparent' 
+    },
+    'Finanzen': { 
+        classes: 'bg-[oklch(71.8%_0.202_349.761)] text-white border-transparent' 
+    },
+    'Audio & Video': { 
+        // Auch hier: Das Grün ist sehr leuchtend/hell -> dunkle Schrift für Lesbarkeit
+        classes: 'bg-[oklch(79.2%_0.209_151.711)] text-gray-900 border-transparent' 
+    },
+    'Tech & Tools': { 
+        classes: 'bg-[oklch(75%_0.183_55.934)] text-white border-transparent' 
+    },
+    'Marketing': { 
+        classes: 'bg-[oklch(70.7%_0.165_254.624)] text-white border-transparent' 
+    },
+    'Programm & Speaker': { 
+        classes: 'bg-[oklch(78.9%_0.154_211.53)] text-white border-transparent' 
+    },
+    // Fallback
+    'default': { 
+        classes: 'bg-gray-500 text-white border-gray-600' 
+    }
+};
+
+export const RESOURCE_LINKS = [
+    {
+        category: "Daily Tools",
+        items: [
+            { name: "Asana Board", url: "https://asana.com", desc: "Projektmanagement & Tasks" },
+            { name: "Slack", url: "https://slack.com", desc: "Interne Kommunikation" },
+            { name: "Hubspot", url: "https://hubspot.com", desc: "CRM & Sales Deals" },
+            { name: "Parki", url: "https://parki.k5.de", desc: "Parkplatzmanagement" },
+            { name: "UTM Builder", url: "https://utm.k5.de", desc: "Link Builder" },
+        ]
+    },
+    {
+        category: "Assets & Brand",
+        items: [
+            { name: "Logo Paket (Drive)", url: "https://drive.google.com/drive/folders/1F8sPB5ZBxJ3h7s-i9E-57smQS9k-VDDg?usp=drive_link", desc: "Alle Logos (PNG, SVG, EPS)" },
+            { name: "Schriftarten", url: "https://drive.google.com/drive/folders/12T2crbECWQyQHOmCkz_dkra-44BhR5RC?usp=drive_link", desc: "K5 Font Family Download" },
+            { name: "Brand Manual", url: "https://drive.google.com/file/d/1Ye2uvTMAAEHF3jZ7sIaq8_o7sj6gh72l/view?usp=drive_link", desc: "K5 Brand Manual" },
+        ]
+    },
+    {
+        category: "Events & Tech",
+        items: [
+            { name: "Vivenu Dashboard", url: "https://dashboard.vivenu.com/login", desc: "Ticketing Backend" },
+            { name: "k5.de Admin", url: "https://k5.de/wp-admin", desc: "Webseiten Verwaltung" },
+            { name: "konferenz.k5.de Admin", url: "https://konferenz.k5.de/wp-admin", desc: "Webseiten Verwaltung" },
+            { name: "Typeform", url: "https://typeform.com", desc: "Votings, Umfragen, Formulare" },
+        ]
+    }
+];
+
+export const TECH_STACK = [
+    { name: "Slack", domain: "slack.com", url: "https://slack.com/signin", desc: "Team Chat & News" },
+    { name: "Asana", domain: "asana.com", url: "https://asana.com", desc: "Projektmanagement" },
+    { name: "HubSpot", domain: "hubspot.com", url: "https://app.hubspot.com", desc: "CRM & Sales Deals" },
+    { name: "Vivenu", domain: "vivenu.com", url: "https://dashboard.vivenu.com/login", desc: "Ticketing Backend" },
+    { name: "Miro", domain: "miro.com", url: "https://miro.com/app", desc: "Whiteboards & Brainstorming" },
+    { name: "Google Workspace", domain: "google.com", url: "https://workspace.google.com", desc: "Mail, Drive & Docs" },
+    { name: "Canva", domain: "canva.com", url: "https://canva.com", desc: "Design" },
+    { name: "Adobe Creative Cloud", domain: "adobe.com", url: "https://www.adobe.com/de/creativecloud.html", desc: "Audio & Video" },
+    { name: "Riverside.fm", domain: "riverside.com", url: "https://riverside.com", desc: "Audio & Video" },
+    { name: "ChatGPT", domain: "openai.com", url: "https://chat.openai.com", desc: "AI Assistant" },
+    { name: "Gemini", domain: "gemini.google.com", url: "https://gemini.google.com", desc: "AI Assistant" },
+    { name: "Brevo", domain: "brevo.com", url: "https://brevo.com", desc: "Newsletter & Marketing" },
+    { name: "Wordpress", domain: "wordpress.com", url: "https://wordpress.com", desc: "Webseiten" },
+    { name: "Cloudflare", domain: "cloudflare.com", url: "https://cloudflare.com", desc: "Hosting, CDN, Subdomains" },
+    { name: "Zapier", domain: "zapier.com", url: "https://zapier.com", desc: "Automatisierungen" },
+    { name: "n8n", domain: "n8n.k5.de", url: "https://n8n.k5.de", desc: "Automatisierungen" },
+];
+
+export const EVENT_TYPES = {
+    'k5_conf': { label: 'K5 Konferenz', color: 'bg-blue-600 text-white', border: 'border-blue-700' },
+    'meetup': { label: 'MEETup', color: 'bg-purple-500 text-white', border: 'border-purple-600' },
+    'female': { label: 'Female Circle', color: 'bg-pink-500 text-white', border: 'border-pink-600' },
+    'dinner': { label: 'Dinner (Partner)', color: 'bg-amber-500 text-white', border: 'border-amber-600' },
+    'second_seat': { label: 'Second Seat Dinner', color: 'bg-indigo-500 text-white', border: 'border-indigo-600' },
+    'team': { label: 'Team Event', color: 'bg-emerald-500 text-white', border: 'border-emerald-600' },
+    'scaleup': { label: 'Scale Up', color: 'bg-cyan-500 text-white', border: 'border-cyan-600' },
+    'health': { label: 'Health / Sport', color: 'bg-rose-400 text-white', border: 'border-rose-500' },
+    'external': { label: 'Extern / Branche', color: 'bg-gray-500 text-white', border: 'border-gray-600' },
+};

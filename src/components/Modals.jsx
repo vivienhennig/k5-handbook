@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { User, AlertTriangle, Flag, Camera, Briefcase, Save, X } from 'lucide-react';
+import { User, AlertTriangle, Flag, Camera, Briefcase, Save, X, Palmtree } from 'lucide-react';
 import { authService, feedbackApi } from '../services/api';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../config/firebase';
+import { vacationApi } from '../services/api';
+import { STANDARD_VACATION_DAYS } from '../config/data';
 
 // --- LOGIN MODAL (Wird aktuell vom Gatekeeper in App.jsx ersetzt, aber als Fallback gut zu haben) ---
 export const LoginModal = ({ isOpen, onClose, onLogin }) => {
@@ -87,6 +89,9 @@ export const ProfileEditModal = ({ isOpen, onClose, currentUser, onSave }) => {
         photoUrl: ''
     });
     const [isSaving, setIsSaving] = useState(false);
+    
+    // State für Urlaubs-Statistik
+    const [vacationStats, setVacationStats] = useState(null);
 
     React.useEffect(() => {
         if (isOpen && currentUser) {
@@ -97,6 +102,28 @@ export const ProfileEditModal = ({ isOpen, onClose, currentUser, onSave }) => {
                 responsibilities: currentUser.responsibilities || '',
                 photoUrl: currentUser.photoUrl || ''
             });
+
+            const loadStats = async () => {
+                const allVacations = await vacationApi.getAllVacations();
+                const currentYear = new Date().getFullYear();
+                const myVacations = allVacations.filter(v => 
+                    v.userId === currentUser.uid && 
+                    v.startDate.startsWith(currentYear.toString())
+                );
+
+                const taken = myVacations.reduce((acc, curr) => acc + curr.daysCount, 0);
+                const entitlement = currentUser.vacationEntitlement || STANDARD_VACATION_DAYS;
+                const carryOver = currentUser.carryOverDays || 0;
+                const total = entitlement + carryOver;
+
+                setVacationStats({
+                    total: total,
+                    taken: taken,
+                    remaining: total - taken,
+                    year: currentYear
+                });
+            };
+            loadStats();
         }
     }, [isOpen, currentUser]);
 
@@ -123,6 +150,33 @@ export const ProfileEditModal = ({ isOpen, onClose, currentUser, onSave }) => {
                     </h3>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-white"><X size={24}/></button>
                 </div>
+
+                {/* --- NEU: URLAUBS STATISTIK MIT ÜBERSCHRIFT --- */}
+                {vacationStats && (
+                    <div className="mb-8">
+                        <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2 flex items-center gap-1.5 ml-1">
+                            <Palmtree size={14}/> Urlaubskonto {vacationStats.year}
+                        </h4>
+                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 flex justify-between items-center text-center border border-blue-100 dark:border-blue-800 shadow-sm">
+                            <div>
+                                <div className="text-xl font-black text-gray-800 dark:text-gray-100">{vacationStats.total}</div>
+                                <div className="text-[10px] uppercase font-bold text-gray-500">Gesamt</div>
+                            </div>
+                            <div className="h-8 w-px bg-blue-200 dark:bg-blue-700"></div>
+                            <div>
+                                <div className="text-xl font-black text-blue-600 dark:text-blue-400">{vacationStats.taken}</div>
+                                <div className="text-[10px] uppercase font-bold text-gray-500">Genommen</div>
+                            </div>
+                            <div className="h-8 w-px bg-blue-200 dark:bg-blue-700"></div>
+                            <div>
+                                <div className={`text-xl font-black ${vacationStats.remaining < 0 ? 'text-red-500' : 'text-green-600'}`}>
+                                    {vacationStats.remaining}
+                                </div>
+                                <div className="text-[10px] uppercase font-bold text-gray-500">Rest</div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     

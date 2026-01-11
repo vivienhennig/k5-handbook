@@ -1,7 +1,7 @@
 import { auth, db } from '../config/firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { collection, addDoc, getDocs, doc, getDoc, setDoc, deleteDoc, query, orderBy, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { INITIAL_NEWS } from '../config/data';
+import { collection, addDoc, getDocs, doc, getDoc, setDoc, deleteDoc, query, orderBy, serverTimestamp, updateDoc, where, limit } from 'firebase/firestore';
+import { INITIAL_NEWS, PUBLIC_HOLIDAYS, VACATION_TYPES } from '../config/data';
 
 export const levenshteinDistance = (a, b) => {
     if (a.length === 0) return b.length;
@@ -21,6 +21,28 @@ export const levenshteinDistance = (a, b) => {
     return matrix[b.length][a.length];
 };
 
+// HILFSFUNKTION: Arbeitstage berechnen (ohne Wochenende & Feiertage)
+export const calculateWorkDays = (startStr, endStr) => {
+    let count = 0;
+    const curDate = new Date(startStr);
+    const endDate = new Date(endStr);
+
+    while (curDate <= endDate) {
+        const dayOfWeek = curDate.getDay();
+        const dateString = curDate.toISOString().split('T')[0];
+        const monthDay = dateString.slice(5); // MM-DD
+
+        const isWeekend = (dayOfWeek === 6) || (dayOfWeek === 0);
+        const isHoliday = PUBLIC_HOLIDAYS.includes(dateString) || PUBLIC_HOLIDAYS.includes(monthDay);
+
+        if (!isWeekend && !isHoliday) {
+            count++;
+        }
+        curDate.setDate(curDate.getDate() + 1);
+    }
+    return count;
+};
+
 export const feedbackApi = {
     async submit(data) {
         if (db) {
@@ -29,14 +51,7 @@ export const feedbackApi = {
                 return { success: true };
             } catch (e) { console.error("Error adding feedback: ", e); throw e; }
         } else {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const currentData = JSON.parse(localStorage.getItem('k5_feedback_db') || '[]');
-                    const newRecord = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), status: 'open', ...data };
-                    localStorage.setItem('k5_feedback_db', JSON.stringify([newRecord, ...currentData]));
-                    resolve({ success: true });
-                }, 300);
-            });
+            return new Promise((resolve) => { resolve({ success: true }); });
         }
     },
     async getAll() {
@@ -46,24 +61,62 @@ export const feedbackApi = {
                 const querySnapshot = await getDocs(q);
                 return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), createdAt: doc.data().createdAt?.toDate().toISOString() || new Date().toISOString() }));
             } catch (e) { return []; }
-        } else {
-            return new Promise((resolve) => {
-                 setTimeout(() => { resolve(JSON.parse(localStorage.getItem('k5_feedback_db') || '[]')); }, 300);
-            });
-        }
+        } else { return []; }
     }
 };
 
 export const userApi = {
-    async getUserData(userId) {
+    async getUserData(userId, email = null) {
         if (!db) return { favorites: [], readHistory: {}, role: 'user' };
         try {
             const docRef = doc(db, "users", userId);
             const docSnap = await getDoc(docRef);
+            
             if (docSnap.exists()) {
-                return docSnap.data();
+                const data = docSnap.data();
+                
+                // LOGIK-FIX: Wir prüfen erst, ob wir Daten updaten müssen
+                const updates = {};
+                let needsUpdate = false;
+
+                // 1. Email fehlt in DB? Nachtragen!
+                if (email && !data.email) {
+                    updates.email = email;
+                    needsUpdate = true;
+                }
+
+                // 2. Name fehlt in DB? Nur DANN aus Email generieren!
+                // Das verhindert, dass dein manueller Name überschrieben wird.
+                if (email && !data.displayName) {
+                    let genName = email.split('@')[0];
+                    genName = genName.charAt(0).toUpperCase() + genName.slice(1);
+                    updates.displayName = genName;
+                    needsUpdate = true;
+                }
+
+                // Wenn etwas fehlt, speichern wir es nach
+                if (needsUpdate) {
+                    await setDoc(docRef, updates, { merge: true });
+                }
+
+                // Wir geben die DB-Daten zurück, ergänzt um evtl. gerade generierte Werte
+                return { ...data, ...updates };
+
             } else {
-                const initialData = { favorites: [], readHistory: {}, role: 'user' };
+                // Neuer User (Erster Login)
+                let genName = 'User';
+                if (email) {
+                    genName = email.split('@')[0];
+                    genName = genName.charAt(0).toUpperCase() + genName.slice(1);
+                }
+
+                const initialData = { 
+                    favorites: [], 
+                    readHistory: {}, 
+                    role: 'user',
+                    email: email || '',
+                    displayName: genName // Hier setzen wir den Start-Namen
+                };
                 await setDoc(docRef, initialData);
                 return initialData;
             }
@@ -74,47 +127,54 @@ export const userApi = {
     },
     async saveFavorites(userId, newFavorites) {
         if (!db) return;
-        try {
-            const userRef = doc(db, "users", userId);
-            await setDoc(userRef, { favorites: newFavorites }, { merge: true });
-        } catch (e) { console.error("Error saving favorites:", e); }
+        const userRef = doc(db, "users", userId);
+        await setDoc(userRef, { favorites: newFavorites }, { merge: true });
     },
     async markSectionRead(userId, sectionId) {
         if (!db) return;
-        try {
-             const userData = await userApi.getUserData(userId);
-             const newHistory = { ...userData.readHistory, [sectionId]: new Date().toISOString() };
-             const userRef = doc(db, "users", userId);
-             await setDoc(userRef, { readHistory: newHistory }, { merge: true });
-        } catch (e) { console.error("Error marking read:", e); }
+        const userData = await userApi.getUserData(userId);
+        const newHistory = { ...userData.readHistory, [sectionId]: new Date().toISOString() };
+        const userRef = doc(db, "users", userId);
+        await setDoc(userRef, { readHistory: newHistory }, { merge: true });
     },
     async getAllUsers() {
         if (!db) return [];
         try {
             const q = query(collection(db, "users"));
             const querySnapshot = await getDocs(q);
-            // Wir mappen die Daten und geben jedem User ein sauberes Objekt
-            return querySnapshot.docs.map(doc => ({ 
-                uid: doc.id, 
-                ...doc.data(),
-                // Fallback, falls kein DisplayName da ist
-                displayName: doc.data().displayName || doc.data().email?.split('@')[0] || 'Unbekannt'
-            }));
-        } catch (e) {
-            console.error("Error fetching users:", e);
-            return [];
-        }
+            return querySnapshot.docs.map(doc => {
+                const data = doc.data();
+                let name = data.displayName;
+                if (!name && data.email) name = data.email.split('@')[0];
+                if (!name) name = 'Unbekannt';
+                return { uid: doc.id, ...data, displayName: name };
+            });
+        } catch (e) { return []; }
     },
     async updateUserRole(targetUserId, newRole) {
         if (!db) return;
-        try {
-            const userRef = doc(db, "users", targetUserId);
-            await updateDoc(userRef, { role: newRole });
-            return true;
-        } catch (e) {
-            console.error("Error updating role:", e);
-            throw e;
-        }
+        const userRef = doc(db, "users", targetUserId);
+        await updateDoc(userRef, { role: newRole });
+    },
+    async updateUserProfile(userId, profileData) {
+        if (!db) return;
+        const userRef = doc(db, "users", userId);
+        await updateDoc(userRef, {
+            displayName: profileData.displayName,
+            position: profileData.position || '',
+            department: profileData.department || '',
+            responsibilities: profileData.responsibilities || '',
+            photoUrl: profileData.photoUrl || ''
+        });
+    },
+    // NEU: Admin Update für Urlaubstage
+    async updateAdminUserStats(targetUid, stats) {
+        if(!db) return;
+        const userRef = doc(db, "users", targetUid);
+        await updateDoc(userRef, {
+            vacationEntitlement: parseFloat(stats.entitlement),
+            carryOverDays: parseFloat(stats.carryOver)
+        });
     }
 };
 
@@ -124,47 +184,75 @@ export const newsApi = {
             try {
                 const q = query(collection(db, "news"), orderBy("id", "desc"));
                 const querySnapshot = await getDocs(q);
-                const news = querySnapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
-                return news.length > 0 ? news : INITIAL_NEWS;
+                return querySnapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
             } catch (e) { return INITIAL_NEWS; }
-        } else {
-            return new Promise((resolve) => {
-                const data = JSON.parse(localStorage.getItem('k5_news_db'));
-                resolve(data || INITIAL_NEWS);
-            });
-        }
+        } else { return INITIAL_NEWS; }
     },
     async add(item) {
         if (db) {
-            try {
-                await addDoc(collection(db, "news"), { ...item, id: Date.now() }); 
-                return await newsApi.getAll();
-            } catch (e) { return []; }
-        } else {
-            return new Promise((resolve) => {
-                const current = JSON.parse(localStorage.getItem('k5_news_db') || '[]');
-                const base = (current.length === 0 && !localStorage.getItem('k5_news_db')) ? INITIAL_NEWS : current;
-                const newItem = { id: Date.now(), ...item };
-                const updated = [newItem, ...base];
-                localStorage.setItem('k5_news_db', JSON.stringify(updated));
-                resolve(updated);
-            });
-        }
+            await addDoc(collection(db, "news"), { ...item, id: Date.now() }); 
+            return await newsApi.getAll();
+        } else { return []; }
     },
     async delete(firebaseId) {
         if (db) {
-            try {
-                await deleteDoc(doc(db, "news", firebaseId));
-                return await newsApi.getAll();
-            } catch (e) { return []; }
-        } else {
-             return new Promise((resolve) => {
-                const current = JSON.parse(localStorage.getItem('k5_news_db') || '[]');
-                const updated = current.filter(n => n.id !== firebaseId && n.firebaseId !== firebaseId);
-                localStorage.setItem('k5_news_db', JSON.stringify(updated));
-                resolve(updated);
-            });
+            await deleteDoc(doc(db, "news", firebaseId));
+            return await newsApi.getAll();
+        } else { return []; }
+    }
+};
+
+export const vacationApi = {
+async getAllVacations() {
+        if (!db) return [];
+        try {
+            // Aktuelles Jahr als Startpunkt (YYYY-01-01)
+            const currentYear = new Date().getFullYear();
+            const startOfYear = `${currentYear}-01-01`;
+
+            // Query mit Filter
+            const q = query(
+                collection(db, "vacations"), 
+                where("endDate", ">=", startOfYear), // Nur Urlaube, die dieses Jahr enden oder später
+                orderBy("endDate", "asc") // Sortierung für den Index
+            );
+            
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (e) { 
+            console.error("Fehler beim Laden:", e);
+            // Fallback ohne Filter, falls Index fehlt
+            const q = query(collection(db, "vacations"));
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         }
+    },
+    async addVacation(vacationData) {
+        if (!db) return;
+        try {
+            let daysCount = 0;
+            const workDays = calculateWorkDays(vacationData.startDate, vacationData.endDate);
+
+            if (vacationData.type === 'half') {
+                daysCount = 0.5;
+            } else if (vacationData.type === 'workation') {
+                daysCount = workDays * 0.5;
+            } else {
+                daysCount = workDays;
+            }
+
+            await addDoc(collection(db, "vacations"), {
+                ...vacationData,
+                daysCount, 
+                rawDays: workDays, 
+                createdAt: serverTimestamp()
+            });
+            return true;
+        } catch (e) { throw e; }
+    },
+    async deleteVacation(vacationId) {
+        if (!db) return;
+        await deleteDoc(doc(db, "vacations", vacationId));
     }
 };
 
@@ -174,20 +262,45 @@ export const authService = {
              const userCredential = await signInWithEmailAndPassword(auth, email, password);
              return userCredential.user;
         } else {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const namePart = email.split('@')[0];
-                    const displayName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-                    if (password === 'k5') {
-                        resolve({ uid: 'admin_1', email: email, displayName: displayName + ' (Admin)', role: 'admin' });
-                    } else {
-                        resolve({ uid: `user_${Date.now()}`, email: email, displayName: displayName, role: 'user' });
-                    }
-                }, 500);
-            });
+            return new Promise((resolve) => resolve({ uid: 'mock', email, role: 'user' }));
         }
     },
-    async logout() {
-        if (auth) await signOut(auth);
-    }
+    async logout() { if (auth) await signOut(auth); }
+};
+
+export const eventApi = {
+    async getAllEvents() {
+        if (!db) return [];
+        // Wir laden erstmal einfach alle Events. Performance-Optimierung (nach Jahr) können wir später machen.
+        const q = query(collection(db, "events"), orderBy("startDate", "asc"));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+
+    async addEvent(data) {
+        if (!db) return;
+        return await addDoc(collection(db, "events"), {
+            ...data,
+            createdAt: serverTimestamp()
+        });
+    },
+
+    async deleteEvent(id) {
+        if (!db) return;
+        return await deleteDoc(doc(db, "events", id));
+    },
+
+    async getUpcoming(count = 3) {
+        if (!db) return [];
+        const today = new Date().toISOString().split('T')[0];
+        // Hole Events, die heute oder in Zukunft starten
+        const q = query(
+            collection(db, "events"), 
+            where("startDate", ">=", today),
+            orderBy("startDate", "asc"),
+            limit(count)
+        );
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
 };

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { User, AlertTriangle, Flag } from 'lucide-react';
+import { User, AlertTriangle, Flag, Camera, Briefcase, Save, X } from 'lucide-react';
 import { authService, feedbackApi } from '../services/api';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
+// --- LOGIN MODAL (Wird aktuell vom Gatekeeper in App.jsx ersetzt, aber als Fallback gut zu haben) ---
 export const LoginModal = ({ isOpen, onClose, onLogin }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -52,6 +53,7 @@ export const LoginModal = ({ isOpen, onClose, onLogin }) => {
     );
 };
 
+// --- FEEDBACK MODAL ---
 export const FeedbackModal = ({ isOpen, onClose, context, user }) => {
   const [type, setType] = useState('outdated');
   const [comment, setComment] = useState('');
@@ -73,4 +75,125 @@ export const FeedbackModal = ({ isOpen, onClose, context, user }) => {
       </div>
     </div>
   );
+};
+
+// --- PROFILE EDIT MODAL ---
+export const ProfileEditModal = ({ isOpen, onClose, currentUser, onSave }) => {
+    const [formData, setFormData] = useState({
+        displayName: '',
+        position: '',
+        department: '',
+        responsibilities: '',
+        photoUrl: ''
+    });
+    const [isSaving, setIsSaving] = useState(false);
+
+    React.useEffect(() => {
+        if (isOpen && currentUser) {
+            setFormData({
+                displayName: currentUser.displayName || '',
+                position: currentUser.position || '',
+                department: currentUser.department || '',
+                responsibilities: currentUser.responsibilities || '',
+                photoUrl: currentUser.photoUrl || ''
+            });
+        }
+    }, [isOpen, currentUser]);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsSaving(true);
+        try {
+            await onSave(currentUser.uid, formData);
+            onClose();
+        } catch (error) {
+            alert("Fehler beim Speichern.");
+        }
+        setIsSaving(false);
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/60 z-[80] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-6 border-b dark:border-gray-700 pb-4">
+                    <h3 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+                        <User className="text-blue-600"/> Dein Profil
+                    </h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-white"><X size={24}/></button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    
+                    {/* FOTO URL */}
+                    <div className="flex gap-4 items-start">
+                        <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-600 shrink-0">
+                            {formData.photoUrl ? (
+                                <img src={formData.photoUrl} alt="Vorschau" className="w-full h-full object-cover" onError={(e) => e.target.style.display='none'}/>
+                            ) : (
+                                <User size={32} className="text-gray-400"/>
+                            )}
+                        </div>
+                        <div className="flex-1">
+                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-1">Profilbild (URL)</label>
+                            <div className="relative">
+                                <Camera size={16} className="absolute left-3 top-3 text-gray-400"/>
+                                <input type="text" placeholder="https://linkedin.com/bild.jpg" className="w-full pl-10 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg p-2.5 text-sm dark:text-white"
+                                    value={formData.photoUrl} onChange={e => setFormData({...formData, photoUrl: e.target.value})}
+                                />
+                            </div>
+                            <p className="text-[10px] text-gray-500 mt-1">Rechtsklick auf dein LinkedIn/Firmen-Foto - "Bildadresse kopieren".</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-1">Name</label>
+                            <input type="text" required className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg p-2.5 text-sm dark:text-white font-bold"
+                                value={formData.displayName} onChange={e => setFormData({...formData, displayName: e.target.value})}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-1">Abteilung</label>
+                            <select className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg p-2.5 text-sm dark:text-white"
+                                value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})}
+                            >
+                                <option value="">- Wählen -</option>
+                                <option value="Event">Event</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Geschäftsführung">Geschäftsführung</option>
+                                <option value="Finanzen">Finanzen</option>
+                                <option value="Audio & Video">Audio & Video</option>
+                                <option value="Tech & Tools">Tech & Tools</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Programm & Speaker">Programm & Speaker</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-1">Job Titel (Position)</label>
+                        <div className="relative">
+                            <Briefcase size={16} className="absolute left-3 top-3 text-gray-400"/>
+                            <input type="text" placeholder="z.B. Senior Marketing Manager" className="w-full pl-10 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg p-2.5 text-sm dark:text-white"
+                                value={formData.position} onChange={e => setFormData({...formData, position: e.target.value})}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-1">Aufgabenbereiche (Stichworte)</label>
+                        <textarea rows="3" placeholder="Wofür bist du zuständig? z.B. Ticketing, Rechnungen, Speaker Betreuung..." className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg p-2.5 text-sm dark:text-white"
+                            value={formData.responsibilities} onChange={e => setFormData({...formData, responsibilities: e.target.value})}
+                        ></textarea>
+                    </div>
+
+                    <button type="submit" disabled={isSaving} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 flex items-center justify-center gap-2 transition-all">
+                        {isSaving ? "Speichere..." : <><Save size={18}/> Profil speichern</>}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
 };

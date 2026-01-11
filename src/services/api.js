@@ -1,6 +1,6 @@
 import { auth, db } from '../config/firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { collection, addDoc, getDocs, doc, getDoc, setDoc, deleteDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, getDoc, setDoc, deleteDoc, query, orderBy, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { INITIAL_NEWS } from '../config/data';
 
 export const levenshteinDistance = (a, b) => {
@@ -87,6 +87,34 @@ export const userApi = {
              const userRef = doc(db, "users", userId);
              await setDoc(userRef, { readHistory: newHistory }, { merge: true });
         } catch (e) { console.error("Error marking read:", e); }
+    },
+    async getAllUsers() {
+        if (!db) return [];
+        try {
+            const q = query(collection(db, "users"));
+            const querySnapshot = await getDocs(q);
+            // Wir mappen die Daten und geben jedem User ein sauberes Objekt
+            return querySnapshot.docs.map(doc => ({ 
+                uid: doc.id, 
+                ...doc.data(),
+                // Fallback, falls kein DisplayName da ist
+                displayName: doc.data().displayName || doc.data().email?.split('@')[0] || 'Unbekannt'
+            }));
+        } catch (e) {
+            console.error("Error fetching users:", e);
+            return [];
+        }
+    },
+    async updateUserRole(targetUserId, newRole) {
+        if (!db) return;
+        try {
+            const userRef = doc(db, "users", targetUserId);
+            await updateDoc(userRef, { role: newRole });
+            return true;
+        } catch (e) {
+            console.error("Error updating role:", e);
+            throw e;
+        }
     }
 };
 

@@ -1,29 +1,36 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>K5 Handbook</title>
-    <!-- Tailwind via CDN für schnelles Setup (in Production besser via PostCSS) -->
+    <title>K5 Digital Handbook</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <script>
       tailwind.config = {
-        darkMode: 'class',
+        darkMode: 'class', // Wichtig, damit dein Dark-Mode-Toggle funktioniert
         theme: {
           extend: {
             fontFamily: {
               sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              // Hier könnten wir deine K5 Farben fest definieren, 
+              // aber deine 'hex' Werte im Code funktionieren auch so.
             }
           }
         }
       }
     </script>
-    <!-- Inter Font laden -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
   </head>
-  <body>
+  <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
     <div id="root"></div>
-    <!-- Verweis auf die React-Startdatei -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

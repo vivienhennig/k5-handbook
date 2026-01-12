@@ -167,3 +167,38 @@ export const EVENT_TYPES = {
     'health': { label: 'Health / Sport', color: 'bg-rose-400 text-white', border: 'border-rose-500' },
     'external': { label: 'Extern / Branche', color: 'bg-gray-500 text-white', border: 'border-gray-600' },
 };
+
+export const TUTORIAL_STEPS = [
+    {
+        targetId: 'nav-search', // ID des HTML Elements
+        title: 'Alles finden',
+        text: 'Nutze die Suche, um Guidelines, Links oder Personen sofort zu finden. Auch Beschreibungen werden durchsucht!'
+    },
+    {
+        targetId: 'nav-vacation',
+        title: 'Urlaub buchen',
+        text: 'Hier findest du deinen Urlaubsanspruch und kannst Anträge stellen. Achte auf die farbigen Feiertage!'
+    },
+    {
+        targetId: 'nav-calendar',
+        title: 'Team Events',
+        text: 'Der zentrale Kalender für alle K5 Events, Meetups und Team-Dinner.'
+    },
+    {
+        targetId: 'nav-profile',
+        title: 'Dein Profil',
+        text: 'Hier kannst du dich ausloggen oder zwischen Hell- und Dunkelmodus wechseln.'
+    }
+];
+
+// Hilfetexte für spezifische Bereiche (Help Beacons)
+export const HELP_TEXTS = {
+    vacation: {
+        title: "So funktioniert der Planer",
+        text: "Klicke auf ein Datum im Kalender, um Tage auszuwählen. \n\nGrau = Wochenende/Feiertag\nFarbe = Genommener Urlaub\n\nDu kannst nur deine eigenen Einträge löschen (Klick auf den Balken)."
+    },
+    calendar: {
+        title: "Events eintragen",
+        text: "Jeder darf Events eintragen! Wähle den passenden Typ (z.B. 'Meetup' oder 'Team Event'), damit die Farben stimmen. Events können auch über mehrere Tage gehen."
+    }
+};

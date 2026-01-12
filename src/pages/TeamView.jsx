@@ -22,7 +22,7 @@ export default function TeamView() {
     );
 
     return (
-        <div className="max-w-6xl mx-auto animate-in fade-in duration-500">
+        <div className="max-w-6xl mx-auto animate-in fade-in duration-500 pb-20">
             <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
                 <div>
                     <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2">Team K5</h2>

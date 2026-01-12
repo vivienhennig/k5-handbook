@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Plus, Trash2, Sun, Palmtree, User, ChevronLeft, ChevronRight, AlertCircle, Laptop, Info } from 'lucide-react';
 import { vacationApi, calculateWorkDays, userApi } from '../services/api';
-// HIER: PUBLIC_HOLIDAYS hinzufügen
+import HelpBeacon from '../components/Tuturials/HelpBeacon';
 import { STANDARD_VACATION_DAYS, VACATION_TYPES, DEPARTMENT_COLORS, PUBLIC_HOLIDAYS } from '../config/data';
 
 export default function VacationView({ currentUser }) {
@@ -173,6 +173,7 @@ export default function VacationView({ currentUser }) {
                 <div>
                     <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2 flex items-center gap-2">
                         <Palmtree className="text-orange-500"/> Urlaubsmanager
+                        <HelpBeacon context="vacation" />
                     </h2>
                     <p className="text-gray-500 dark:text-gray-400">Planung & Übersicht für {currentYear}</p>
                 </div>

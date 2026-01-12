@@ -1,6 +1,5 @@
 import React from 'react';
 import { ExternalLink, Folder, Link as LinkIcon, Copy, Check, Layers } from 'lucide-react';
-// HIER: TECH_STACK importieren
 import { RESOURCE_LINKS, TECH_STACK } from '../config/data';
 
 export default function ResourceView() {
@@ -35,7 +34,7 @@ export default function ResourceView() {
                             rel="noreferrer"
                             className="group bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 transition-all flex items-center gap-4"
                         >
-                            {/* LOGO TRICK MIT CLEARBIT */}
+                            {/* LOGO TRICK MIT GOOGLE FAVICONS */}
                             <div className="w-12 h-12 shrink-0 bg-gray-50 dark:bg-white rounded-lg p-2 flex items-center justify-center border border-gray-100">
                                 <img 
                                     src={`https://www.google.com/s2/favicons?domain=${tool.domain}&sz=128`} 
@@ -61,7 +60,7 @@ export default function ResourceView() {
                 </div>
             </div>
 
-            {/* --- 2. ORDNER & LINKS (Die alte Liste) --- */}
+            {/* --- 2. ORDNER & LINKS --- */}
             <div className="space-y-12">
                 {RESOURCE_LINKS.map((section, idx) => (
                     <div key={idx}>

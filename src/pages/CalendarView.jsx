@@ -1,101 +1,120 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, MapPin, Clock, Plus, Trash2, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, Trash2, ChevronLeft, ChevronRight, X, CheckSquare } from 'lucide-react';
 import { eventApi } from '../services/api';
-import { EVENT_TYPES } from '../config/data';
+import { EVENT_TYPES } from '../config/data'; // <--- Hier kommen deine Typen her
+import HelpBeacon from '../components/Tuturials/HelpBeacon';
 
 export default function CalendarView({ currentUser }) {
     const [events, setEvents] = useState([]);
     const [viewDate, setViewDate] = useState(new Date());
-    const [modalOpen, setModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     
-    // Form State
+    // FORM STATE
     const [title, setTitle] = useState('');
-    const [type, setType] = useState('external');
+    const [type, setType] = useState('external'); // Standard: Extern
     const [location, setLocation] = useState('');
-    const [start, setStart] = useState('');
-    const [end, setEnd] = useState('');
-    const [startTime, setStartTime] = useState('09:00'); // Zeit optional
+    const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+    const [startTime, setStartTime] = useState('09:00');
+    const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+    const [endTime, setEndTime] = useState('10:00');
+    const [isAllDay, setIsAllDay] = useState(false);
+
+    const [loading, setLoading] = useState(false);
+    const isPrivileged = currentUser?.role === 'admin' || currentUser?.role === 'editor';
 
     useEffect(() => { loadEvents(); }, []);
+
+    // Auto-Ganztägig bei Datumsänderung
+    useEffect(() => {
+        if (startDate !== endDate) setIsAllDay(true);
+    }, [startDate, endDate]);
 
     const loadEvents = async () => {
         const data = await eventApi.getAllEvents();
         setEvents(data);
     };
 
-    const handleAdd = async (e) => {
+    const handleSave = async (e) => {
         e.preventDefault();
-        if (!title || !start) return;
+        setLoading(true);
 
-        await eventApi.addEvent({
+        let finalStart = startDate;
+        let finalEnd = endDate;
+
+        if (!isAllDay) {
+            finalStart = `${startDate}T${startTime}`;
+            finalEnd = `${endDate}T${endTime}`;
+        }
+
+        const newEvent = {
             title,
-            type,
+            type, // Hier speichern wir jetzt 'k5_conf', 'meetup' etc.
             location,
-            startDate: start, // YYYY-MM-DD
-            endDate: end || start, // Wenn kein Ende, dann 1 Tag
-            startTime,
-            creatorId: currentUser.uid,
-            creatorName: currentUser.displayName
-        });
-        
-        setModalOpen(false);
-        setTitle(''); setLocation(''); setStart(''); setEnd('');
+            startDate: finalStart, 
+            start: finalStart,
+            end: finalEnd,
+            allDay: isAllDay,
+            createdBy: currentUser?.email || 'System'
+        };
+
+        await eventApi.addEvent(newEvent);
+        setIsModalOpen(false);
+        resetForm();
         loadEvents();
+        setLoading(false);
     };
 
-    const handleDelete = async (e, id) => {
-        e.stopPropagation(); // Damit sich nicht das Modal öffnet
-        if(confirm("Event wirklich löschen?")) {
+    const handleDelete = async (id) => {
+        if (window.confirm('Termin wirklich löschen?')) {
             await eventApi.deleteEvent(id);
             loadEvents();
         }
     };
 
+    const resetForm = () => {
+        setTitle('');
+        setLocation('');
+        setType('external');
+        setStartDate(new Date().toISOString().split('T')[0]);
+        setEndDate(new Date().toISOString().split('T')[0]);
+        setStartTime('09:00');
+        setEndTime('10:00');
+        setIsAllDay(false);
+    };
+
     // --- KALENDER LOGIK ---
-    const getDaysInMonth = () => {
-        const year = viewDate.getFullYear();
-        const month = viewDate.getMonth();
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        
-        const days = [];
-        
-        // Leere Zellen davor (wenn Monat nicht am Montag startet)
-        // getDay(): 0=So, 1=Mo. Wir wollen Mo=0, So=6
-        let startDay = firstDay.getDay() - 1; 
-        if (startDay === -1) startDay = 6; 
+    const getDaysInMonth = (date) => {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const days = new Date(year, month + 1, 0).getDate();
+        const firstDay = new Date(year, month, 1).getDay(); 
+        const offset = firstDay === 0 ? 6 : firstDay - 1; 
 
-        for (let i = 0; i < startDay; i++) {
-            days.push(null);
-        }
+        const result = [];
+        for (let i = 0; i < offset; i++) result.push(null);
+        for (let i = 1; i <= days; i++) result.push(new Date(year, month, i));
+        return result;
+    };
 
-        // Tage des Monats
-        for (let i = 1; i <= lastDay.getDate(); i++) {
-            const date = new Date(year, month, i);
-            const dateStr = date.toISOString().split('T')[0];
-            days.push({ date, dateStr, day: i });
-        }
-        return days;
+    const days = getDaysInMonth(viewDate);
+    const monthName = viewDate.toLocaleString('de-DE', { month: 'long', year: 'numeric' });
+
+    const getEventsForDay = (date) => {
+        if (!date) return [];
+        const dateStr = date.toISOString().split('T')[0];
+        
+        return events.filter(evt => {
+            const rawStart = evt.start || evt.startDate || '';
+            const rawEnd = evt.end || rawStart;
+            return dateStr >= rawStart.split('T')[0] && dateStr <= rawEnd.split('T')[0];
+        });
     };
 
     const changeMonth = (delta) => {
-        const d = new Date(viewDate);
-        d.setMonth(d.getMonth() + delta);
-        setViewDate(d);
+        const newDate = new Date(viewDate);
+        newDate.setMonth(newDate.getMonth() + delta);
+        setViewDate(newDate);
     };
-
-    const isToday = (d) => {
-        if(!d) return false;
-        const today = new Date();
-        return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
-    };
-
-    const getEventsForDay = (dateStr) => {
-        return events.filter(ev => dateStr >= ev.startDate && dateStr <= ev.endDate);
-    };
-
-    const days = getDaysInMonth();
-    const monthName = viewDate.toLocaleString('de-DE', { month: 'long', year: 'numeric' });
 
     return (
         <div className="max-w-7xl mx-auto animate-in fade-in duration-500 pb-20">
@@ -104,62 +123,73 @@ export default function CalendarView({ currentUser }) {
                 <div>
                     <h2 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-2">
                         <CalendarIcon className="text-blue-600"/> Event Kalender
+                        <HelpBeacon context="calendar" />
                     </h2>
                     <p className="text-gray-500 dark:text-gray-400">Interne & Externe Termine im Überblick.</p>
                 </div>
-                <button onClick={() => setModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg hover:shadow-blue-500/30 transition-all">
-                    <Plus size={20}/> Event eintragen
-                </button>
+                {isPrivileged && (
+                    <button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-lg shadow-blue-500/30">
+                        <Plus size={20}/> Termin eintragen
+                    </button>
+                )}
             </div>
 
             {/* Kalender Grid */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                {/* Controls */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                    <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full"><ChevronLeft/></button>
-                    <h3 className="text-xl font-black text-gray-800 dark:text-white uppercase tracking-wider">{monthName}</h3>
-                    <button onClick={() => changeMonth(1)} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full"><ChevronRight/></button>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-700">
+                    <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><ChevronLeft/></button>
+                    <h3 className="text-xl font-bold uppercase tracking-widest text-gray-700 dark:text-gray-200">{monthName}</h3>
+                    <button onClick={() => changeMonth(1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><ChevronRight/></button>
                 </div>
 
-                {/* Weekdays */}
-                <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                    {['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map(d => (
-                        <div key={d} className="p-3 text-center text-xs font-bold text-gray-400 uppercase">{d}</div>
+                <div className="grid grid-cols-7 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
+                    {['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map(day => (
+                        <div key={day} className="py-3 text-center text-xs font-bold text-gray-400 uppercase">{day}</div>
                     ))}
                 </div>
 
-                {/* Days */}
-                <div className="grid grid-cols-7 auto-rows-[minmax(120px,auto)] divide-x divide-gray-100 dark:divide-gray-700 bg-gray-100 dark:bg-gray-700 gap-px border-b border-gray-200 dark:border-gray-700">
-                    {days.map((dayObj, idx) => {
-                        if (!dayObj) return <div key={idx} className="bg-white/50 dark:bg-gray-800/50"></div>; // Leere Zelle
-
-                        const dayEvents = getEventsForDay(dayObj.dateStr);
+                <div className="grid grid-cols-7 auto-rows-fr">
+                    {days.map((date, idx) => {
+                        if (!date) return <div key={idx} className="bg-gray-50/30 dark:bg-gray-800/50 min-h-[120px] border-b border-r border-gray-100 dark:border-gray-700/50"/>;
                         
+                        const dayEvents = getEventsForDay(date);
+                        const isToday = new Date().toDateString() === date.toDateString();
+                        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+
                         return (
-                            <div key={idx} className={`bg-white dark:bg-gray-800 p-2 relative group min-h-[120px] transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 ${isToday(dayObj.date) ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}>
-                                <div className={`text-sm font-bold mb-2 flex justify-between items-center ${isToday(dayObj.date) ? 'text-blue-600' : 'text-gray-400'}`}>
-                                    <span className={isToday(dayObj.date) ? "bg-blue-100 dark:bg-blue-900 px-2 rounded-full" : ""}>{dayObj.day}</span>
-                                    {isToday(dayObj.date) && <span className="text-[10px] uppercase">Heute</span>}
+                            <div key={idx} className={`min-h-[120px] p-2 border-b border-r border-gray-100 dark:border-gray-700 transition-colors ${isWeekend ? 'bg-gray-50/50 dark:bg-gray-800/30' : 'bg-white dark:bg-gray-800'}`}>
+                                <div className="flex justify-between items-start mb-2">
+                                    <span className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400'}`}>
+                                        {date.getDate()}
+                                    </span>
                                 </div>
                                 
-                                <div className="space-y-1.5">
-                                    {dayEvents.map(ev => {
-                                        const style = EVENT_TYPES[ev.type] || EVENT_TYPES['external'];
-                                        return (
-                                            <div key={ev.id} className={`${style.color} text-[10px] p-1.5 rounded shadow-sm border-l-2 ${style.border} cursor-default relative group/item`}>
-                                                <div className="font-bold truncate">{ev.title}</div>
-                                                {ev.startTime && <div className="flex items-center gap-1 opacity-90"><Clock size={8}/> {ev.startTime}</div>}
-                                                
-                                                {/* Tooltip on Hover */}
-                                                <div className="absolute z-50 left-0 bottom-full mb-1 w-48 bg-gray-900 text-white text-xs p-2 rounded shadow-xl hidden group-hover/item:block pointer-events-none">
-                                                    <div className="font-bold mb-1">{ev.title}</div>
-                                                    <div className="text-gray-300">{ev.location}</div>
-                                                    <div className="text-gray-400 mt-1">von {ev.creatorName}</div>
-                                                </div>
+                                <div className="space-y-1">
+                                    {dayEvents.map(evt => {
+                                        // HIER: Wir nutzen direkt deine Konfiguration!
+                                        // Falls der Typ nicht existiert (altes Event), nehmen wir 'external' als Fallback
+                                        const typeConfig = EVENT_TYPES[evt.type] || EVENT_TYPES['external'];
+                                        
+                                        const rawStart = evt.start || evt.startDate || '';
+                                        const timeStr = (!evt.allDay && rawStart.includes('T')) 
+                                            ? rawStart.split('T')[1].substring(0,5) 
+                                            : '';
 
-                                                {/* Delete Button (Own Events only) */}
-                                                {(ev.creatorId === currentUser.uid || currentUser.role === 'admin') && (
-                                                    <button onClick={(e) => handleDelete(e, ev.id)} className="absolute top-1 right-1 opacity-0 group-hover/item:opacity-100 bg-black/20 hover:bg-black/40 rounded p-0.5 transition-all text-white">
+                                        return (
+                                            <div key={evt.id} 
+                                                // Wir nutzen .color (z.B. 'bg-blue-600 text-white') und .border direkt aus deiner Config
+                                                className={`text-[10px] px-2 py-1 rounded border-l-4 truncate cursor-pointer hover:opacity-80 transition-opacity group relative shadow-sm ${typeConfig.color} ${typeConfig.border}`}
+                                            >
+                                                <span className="font-bold mr-1 opacity-90 border-r border-white/30 pr-1 mr-1 inline-block">
+                                                    {evt.allDay ? 'Ganztägig' : timeStr} 
+                                                </span>
+                                                {evt.title}
+                                                
+                                                {isPrivileged && (
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); handleDelete(evt.id); }}
+                                                        className="absolute right-1 top-1/2 -translate-y-1/2 hidden group-hover:block bg-white text-red-500 rounded-full p-0.5 shadow-sm"
+                                                    >
                                                         <Trash2 size={10}/>
                                                     </button>
                                                 )}
@@ -173,57 +203,45 @@ export default function CalendarView({ currentUser }) {
                 </div>
             </div>
 
-            {/* ADD EVENT MODAL */}
-            {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md animate-in zoom-in duration-200">
-                        <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Neues Event</h3>
-                            <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X/></button>
+            {/* MODAL */}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
+                            <h3 className="font-bold text-lg text-gray-900 dark:text-white">Neuer Termin</h3>
+                            <button onClick={() => setIsModalOpen(false)}><X className="text-gray-400 hover:text-gray-600"/></button>
                         </div>
-                        <form onSubmit={handleAdd} className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Titel</label>
-                                <input autoFocus type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg dark:text-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="z.B. OMR Festival" required/>
-                            </div>
-                            
+                        
+                        <form onSubmit={handleSave} className="p-6 space-y-4">
+                            <div><label className="block text-xs font-bold text-gray-500 uppercase mb-1">Titel</label><input required type="text" className="w-full border dark:border-gray-600 p-2 rounded-lg dark:bg-gray-700 dark:text-white" value={title} onChange={e => setTitle(e.target.value)} placeholder="z.B. K5 Konferenz"/></div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Typ</label>
-                                    <select value={type} onChange={e => setType(e.target.value)} className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg dark:text-white outline-none focus:ring-2 focus:ring-blue-500">
+                                    <select className="w-full border dark:border-gray-600 p-2 rounded-lg dark:bg-gray-700 dark:text-white" value={type} onChange={e => setType(e.target.value)}>
+                                        {/* HIER: Wir generieren die Optionen aus deinem EVENT_TYPES Objekt */}
                                         {Object.entries(EVENT_TYPES).map(([key, val]) => (
                                             <option key={key} value={key}>{val.label}</option>
                                         ))}
                                     </select>
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Uhrzeit</label>
-                                    <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg dark:text-white outline-none focus:ring-2 focus:ring-blue-500"/>
-                                </div>
+                                <div><label className="block text-xs font-bold text-gray-500 uppercase mb-1">Ort</label><input type="text" className="w-full border dark:border-gray-600 p-2 rounded-lg dark:bg-gray-700 dark:text-white" value={location} onChange={e => setLocation(e.target.value)} placeholder="Optional"/></div>
                             </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Ort</label>
-                                <div className="relative">
-                                    <MapPin size={16} className="absolute left-3 top-3.5 text-gray-400"/>
-                                    <input type="text" value={location} onChange={e => setLocation(e.target.value)} className="w-full pl-10 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg dark:text-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="München / Office"/>
-                                </div>
+                            <hr className="border-gray-100 dark:border-gray-700 my-2"/>
+                            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setIsAllDay(!isAllDay)}>
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isAllDay ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300 bg-white'}`}>{isAllDay && <CheckSquare size={14}/>}</div>
+                                <span className="text-sm font-bold text-gray-700 dark:text-gray-300 select-none">Ganztägiges Event</span>
                             </div>
-
                             <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Startdatum</label>
-                                    <input type="date" value={start} onChange={e => setStart(e.target.value)} className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg dark:text-white outline-none focus:ring-2 focus:ring-blue-500" required/>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Enddatum (Optional)</label>
-                                    <input type="date" value={end} onChange={e => setEnd(e.target.value)} className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg dark:text-white outline-none focus:ring-2 focus:ring-blue-500" min={start}/>
-                                </div>
+                                <div><label className="block text-xs font-bold text-gray-500 uppercase mb-1">Start Datum</label><input required type="date" className="w-full border dark:border-gray-600 p-2 rounded-lg dark:bg-gray-700 dark:text-white" value={startDate} onChange={e => setStartDate(e.target.value)}/></div>
+                                <div><label className="block text-xs font-bold text-gray-500 uppercase mb-1">Ende Datum</label><input required type="date" className="w-full border dark:border-gray-600 p-2 rounded-lg dark:bg-gray-700 dark:text-white" value={endDate} onChange={e => setEndDate(e.target.value)}/></div>
+                                {!isAllDay && (
+                                    <>
+                                        <div><label className="block text-xs font-bold text-gray-500 uppercase mb-1">Start Zeit</label><input required type="time" className="w-full border dark:border-gray-600 p-2 rounded-lg dark:bg-gray-700 dark:text-white" value={startTime} onChange={e => setStartTime(e.target.value)}/></div>
+                                        <div><label className="block text-xs font-bold text-gray-500 uppercase mb-1">Ende Zeit</label><input required type="time" className="w-full border dark:border-gray-600 p-2 rounded-lg dark:bg-gray-700 dark:text-white" value={endTime} onChange={e => setEndTime(e.target.value)}/></div>
+                                    </>
+                                )}
                             </div>
-
-                            <button type="submit" className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30">
-                                Speichern
-                            </button>
+                            <div className="pt-4"><button disabled={loading} type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20 flex justify-center items-center gap-2">{loading ? 'Speichere...' : <><Plus size={18}/> Termin erstellen</>}</button></div>
                         </form>
                     </div>
                 </div>

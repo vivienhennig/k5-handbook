@@ -3,7 +3,7 @@ import { Check, Zap, Cpu, ChevronUp, ChevronDown } from 'lucide-react';
 import { AVAILABLE_TOOLS } from '../config/data';
 import { CodeBlock } from '../components/UI';
 
-const Wizard = () => {
+const AutomationView = () => {
     const [step, setStep] = useState(1);
     const [selectedTools, setSelectedTools] = useState([]);
     const [automationMode, setAutomationMode] = useState('');
@@ -43,4 +43,4 @@ const Wizard = () => {
   );
 };
 
-export default Wizard;
+export default AutomationView;

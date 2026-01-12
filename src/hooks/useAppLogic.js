@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { userApi, newsApi, eventApi, feedbackApi, authService } from '../services/api';
@@ -11,6 +11,9 @@ export function useAppLogic() {
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [feedbackContext, setFeedbackContext] = useState('');
+  
+  // TUTORIAL STATE (NEU)
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // Data
   const [user, setUser] = useState(null);
@@ -27,12 +30,23 @@ export function useAppLogic() {
 
   // --- INIT & AUTH ---
   useEffect(() => {
+    // 1. Dark Mode laden
     if (localStorage.getItem('k5_dark_mode') === 'true') setDarkMode(true);
     
-    // Globale Daten laden
+    // 2. Tutorial Check (NEU)
+    // Wir warten 1 Sekunde, damit die Seite sicher geladen ist
+    const tutorialSeen = localStorage.getItem('k5_tutorial_seen');
+    if (!tutorialSeen) {
+        setTimeout(() => {
+            setShowTutorial(true);
+        }, 1000);
+    }
+
+    // 3. Globale Daten laden
     newsApi.getAll().then(setNewsFeed);
     eventApi.getUpcoming(3).then(setUpcomingEvents);
 
+    // 4. User aus LocalStorage holen (für schnellen Start)
     const storedUser = localStorage.getItem('k5_session_user');
     if (storedUser) {
          const u = JSON.parse(storedUser);
@@ -45,6 +59,7 @@ export function useAppLogic() {
          });
     }
 
+    // 5. Firebase Auth Listener
     if(auth) {
         const unsubscribe = onAuthStateChanged(auth, async (u) => {
             if(u) {
@@ -109,16 +124,22 @@ export function useAppLogic() {
     }
   }, [activeTab, user, isPrivileged]);
 
+  // NEU: Tutorial Beenden
+  const finishTutorial = () => {
+      setShowTutorial(false);
+      localStorage.setItem('k5_tutorial_seen', 'true');
+  };
+
   return {
     // State
     activeTab, darkMode, user, authLoading, isPrivileged,
     newsFeed, upcomingEvents, userFavorites,
     feedbackModalOpen, profileModalOpen, feedbackContext,
-    adminFeedbackList,
+    adminFeedbackList, showTutorial, // <--- WICHTIG
     // Setters
     setNewsFeed, setFeedbackModalOpen, setProfileModalOpen, setFeedbackContext, setUser,
     // Actions
-    toggleDarkMode, handleNav, hasUpdate, toggleFavorite, 
+    toggleDarkMode, handleNav, hasUpdate, toggleFavorite, finishTutorial, // <--- WICHTIG
     handleLogout: () => { authService.logout(); setUser(null); localStorage.removeItem('k5_session_user'); },
     handleLoginSuccess: (u) => { if(!auth) localStorage.setItem('k5_session_user', JSON.stringify(u)); setUser(u); },
     handleProfileSave: async (uid, data) => { await userApi.updateUserProfile(uid, data); setUser(prev => ({ ...prev, ...data })); }

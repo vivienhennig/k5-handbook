@@ -3,8 +3,10 @@ import { Calendar as CalendarIcon, Plus, Trash2, ChevronLeft, ChevronRight, X, C
 import { eventApi } from '../services/api';
 import { EVENT_TYPES } from '../config/data'; // <--- Hier kommen deine Typen her
 import HelpBeacon from '../components/Tuturials/HelpBeacon';
+import { useToast } from '../context/ToastContext';
 
 export default function CalendarView({ currentUser }) {
+    const { addToast } = useToast();
     const [events, setEvents] = useState([]);
     const [viewDate, setViewDate] = useState(new Date());
     const [isModalOpen, setIsModalOpen] = useState(false);

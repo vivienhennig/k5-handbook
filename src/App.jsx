@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
 import LoginView from './pages/LoginView';
-import FeedbackButton from './components/FeedbackButton'; // <--- WICHTIG
+import FeedbackButton from './components/FeedbackButton';
+import ProfileModal from './components/ProfileModal'; // <--- MODAL IMPORT
 import { Menu, X } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './config/firebase';
-import { newsApi, userApi, eventApi, feedbackApi } from './services/api'; // <--- feedbackApi importieren
+import { userApi, eventApi, feedbackApi } from './services/api';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -15,11 +16,12 @@ function App() {
   
   const [activeTab, setActiveTab] = useState('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false); // <--- Modal State
   
   // Data States
   const [newsFeed, setNewsFeed] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
-  const [adminFeedbackList, setAdminFeedbackList] = useState([]); // <--- State für Feedback
+  const [adminFeedbackList, setAdminFeedbackList] = useState([]);
 
   // Auth Listener
   useEffect(() => {
@@ -29,7 +31,7 @@ function App() {
         setUserData(dbUser);
         setUser({ ...currentUser, ...dbUser });
         loadDashboardData();
-        loadFeedback(); // <--- Feedback laden
+        loadFeedback();
       } else {
         setUser(null);
         setUserData(null);
@@ -40,16 +42,22 @@ function App() {
   }, []);
 
   const loadDashboardData = async () => {
-    const news = await newsApi.getAll();
-    setNewsFeed(news);
     const events = await eventApi.getUpcoming(3);
     setUpcomingEvents(events);
   };
 
-  // Feedback laden Funktion (wird auch an MainContent übergeben)
   const loadFeedback = async () => {
       const data = await feedbackApi.getAll();
       setAdminFeedbackList(data);
+  };
+
+  // Wird aufgerufen, wenn im Profil-Modal gespeichert wird
+  const refreshUserData = async () => {
+      if (user?.uid) {
+          const updatedUser = await userApi.getUserData(user.uid, user.email);
+          setUserData(updatedUser);
+          setUser(prev => ({ ...prev, ...updatedUser }));
+      }
   };
 
   const handleNav = (tabId) => {
@@ -69,9 +77,6 @@ function App() {
   };
 
   const openFeedback = (context = '') => {
-      // Diese Funktion kann genutzt werden, um den Feedback Button 
-      // programmatisch zu öffnen, falls wir das Feature im FeedbackButton einbauen.
-      // Für jetzt reicht es, wenn der Button einfach da ist.
       console.log("Feedback requested for:", context);
   };
 
@@ -86,6 +91,15 @@ function App() {
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden text-gray-900 dark:text-gray-100 font-sans">
       
+      {/* Profil Modal Overlay */}
+      {isProfileModalOpen && (
+          <ProfileModal 
+              user={userData} 
+              onClose={() => setIsProfileModalOpen(false)}
+              onUpdate={refreshUserData}
+          />
+      )}
+
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setIsMobileMenuOpen(false)}></div>
@@ -100,6 +114,7 @@ function App() {
           isPrivileged={isPrivileged}
           isMobile={true}
           closeMobileMenu={() => setIsMobileMenuOpen(false)}
+          onOpenProfile={() => setIsProfileModalOpen(true)} // <--- Handler übergeben
         />
       </div>
 
@@ -122,10 +137,10 @@ function App() {
               userFavorites={userData?.favorites || []}
               handleNav={handleNav}
               toggleFavorite={toggleFavorite}
-              adminFeedbackList={adminFeedbackList} // <--- DATEN ÜBERGEBEN
+              adminFeedbackList={adminFeedbackList}
               isPrivileged={isPrivileged}
               openFeedback={openFeedback}
-              onRefreshFeedback={loadFeedback} // <--- REFRESH FUNKTION ÜBERGEBEN
+              onRefreshFeedback={loadFeedback}
            />
         </div>
 

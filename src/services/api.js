@@ -1,176 +1,98 @@
 import { auth, db } from '../config/firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { collection, addDoc, getDocs, doc, getDoc, setDoc, deleteDoc, query, orderBy, serverTimestamp, updateDoc, where, limit } from 'firebase/firestore';
-import { INITIAL_NEWS, PUBLIC_HOLIDAYS } from '../config/data';
+import { 
+    collection, addDoc, getDocs, doc, getDoc, setDoc, deleteDoc, 
+    query, orderBy, serverTimestamp, updateDoc, where, limit 
+} from 'firebase/firestore';
+import { PUBLIC_HOLIDAYS as IMPORTED_HOLIDAYS } from '../config/data';
 
-// HILFSFUNKTION: Arbeitstage berechnen
+const PUBLIC_HOLIDAYS = IMPORTED_HOLIDAYS || [];
+
+// --- HELPER: Arbeitstage ---
 export const calculateWorkDays = (startStr, endStr) => {
+    if (!startStr || !endStr) return 0;
     let count = 0;
-    const curDate = new Date(startStr);
+    const loopDate = new Date(startStr);
     const endDate = new Date(endStr);
+    if (loopDate > endDate) return 0;
 
-    while (curDate <= endDate) {
-        const dayOfWeek = curDate.getDay();
-        const dateString = curDate.toISOString().split('T')[0];
+    while (loopDate <= endDate) {
+        const dayOfWeek = loopDate.getDay();
+        const dateString = loopDate.toISOString().split('T')[0];
         const monthDay = dateString.slice(5); 
-
         const isWeekend = (dayOfWeek === 6) || (dayOfWeek === 0);
-        const isHoliday = PUBLIC_HOLIDAYS.includes(dateString) || PUBLIC_HOLIDAYS.includes(monthDay);
-
-        if (!isWeekend && !isHoliday) {
-            count++;
-        }
-        curDate.setDate(curDate.getDate() + 1);
+        const isHoliday = Array.isArray(PUBLIC_HOLIDAYS) && (
+            PUBLIC_HOLIDAYS.includes(dateString) || 
+            PUBLIC_HOLIDAYS.includes(monthDay)
+        );
+        if (!isWeekend && !isHoliday) count++;
+        loopDate.setDate(loopDate.getDate() + 1);
     }
     return count;
 };
 
-// --- FEEDBACK API (NEU & ERWEITERT) ---
-export const feedbackApi = {
-    async submit(data) {
-        if (db) {
-            try {
-                await addDoc(collection(db, "feedback"), { ...data, createdAt: serverTimestamp(), status: 'open' });
-                return { success: true };
-            } catch (e) { console.error("Error adding feedback: ", e); throw e; }
-        } else {
-            return new Promise((resolve) => { resolve({ success: true }); });
-        }
+// --- AUTH SERVICE (Wieder da!) ---
+export const authService = {
+    async login(email, password) {
+        if (!auth) throw new Error("Auth not initialized");
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        return cred.user;
     },
-    async getAll() {
-        if (db) {
-            try {
-                const q = query(collection(db, "feedback"), orderBy("createdAt", "desc"));
-                const querySnapshot = await getDocs(q);
-                return querySnapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return { 
-                        id: doc.id, 
-                        ...data, 
-                        // Sicherstellen, dass createdAt ein String ist
-                        createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString() 
-                    };
-                });
-            } catch (e) { return []; }
-        } else { return []; }
-    },
-    // Eintrag löschen
-    async delete(id) {
-        if (!db) return;
-        await deleteDoc(doc(db, "feedback", id));
-    },
-    // Status auf 'resolved' setzen
-    async resolve(id) {
-        if (!db) return;
-        const ref = doc(db, "feedback", id);
-        await updateDoc(ref, { status: 'resolved' });
+    async logout() { 
+        if (auth) await signOut(auth); 
     }
 };
 
-// --- USER API ---
+// --- USER & PROFIL API ---
 export const userApi = {
-    async getUserData(userId, email = null) {
-        if (!db) return { favorites: [], readHistory: {}, role: 'user' };
-        try {
-            const docRef = doc(db, "users", userId);
-            const docSnap = await getDoc(docRef);
-            
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const updates = {};
-                let needsUpdate = false;
-
-                if (email && !data.email) {
-                    updates.email = email;
-                    needsUpdate = true;
-                }
-                if (email && !data.displayName) {
-                    let genName = email.split('@')[0];
-                    genName = genName.charAt(0).toUpperCase() + genName.slice(1);
-                    updates.displayName = genName;
-                    needsUpdate = true;
-                }
-                if (needsUpdate) {
-                    await setDoc(docRef, updates, { merge: true });
-                }
-                return { ...data, ...updates };
-
-            } else {
-                let genName = 'User';
-                if (email) {
-                    genName = email.split('@')[0];
-                    genName = genName.charAt(0).toUpperCase() + genName.slice(1);
-                }
-                const initialData = { 
-                    favorites: [], 
-                    readHistory: {}, 
-                    role: 'user',
-                    email: email || '',
-                    displayName: genName 
-                };
-                await setDoc(docRef, initialData);
-                return initialData;
-            }
-        } catch (e) {
-            return { favorites: [], readHistory: {}, role: 'user' };
-        }
-    },
-    async saveFavorites(userId, newFavorites) {
-        if (!db) return;
-        const userRef = doc(db, "users", userId);
-        await setDoc(userRef, { favorites: newFavorites }, { merge: true });
-    },
     async getAllUsers() {
         if (!db) return [];
-        try {
-            const q = query(collection(db, "users"));
-            const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => {
-                const data = doc.data();
-                let name = data.displayName;
-                if (!name && data.email) name = data.email.split('@')[0];
-                if (!name) name = 'Unbekannt';
-                return { uid: doc.id, ...data, displayName: name };
-            });
-        } catch (e) { return []; }
+        const snapshot = await getDocs(collection(db, "users"));
+        return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
     },
-    async updateUserRole(targetUserId, newRole) {
+    async getUserData(userId, email = null) {
+        if (!db) return { uid: userId, role: 'user' };
+        const docRef = doc(db, "users", userId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) return { uid: userId, ...docSnap.data() };
+        
+        const initial = { 
+            email: email || '', 
+            displayName: email?.split('@')[0] || 'User', 
+            role: 'user', 
+            favorites: [],
+            department: 'Marketing' 
+        };
+        await setDoc(docRef, initial);
+        return { uid: userId, ...initial };
+    },
+    async updateUserProfile(userId, profileData) {
         if (!db) return;
-        const userRef = doc(db, "users", targetUserId);
-        await updateDoc(userRef, { role: newRole });
+        const userRef = doc(db, "users", userId);
+        const updatePayload = {
+            displayName: profileData.displayName,
+            position: profileData.position || "",
+            department: profileData.department || "Marketing",
+            photoUrl: profileData.photoUrl || "",
+            responsibilities: profileData.responsibilities || "",
+            birthDate: profileData.birthDate || ""
+        };
+        await setDoc(userRef, updatePayload, { merge: true });
     },
-    async updateAdminUserStats(targetUid, stats) {
-        if(!db) return;
-        const userRef = doc(db, "users", targetUid);
-        await updateDoc(userRef, {
+    async updateUserRole(userId, role) {
+        if (!db) return;
+        await updateDoc(doc(db, "users", userId), { role });
+    },
+    async updateAdminUserStats(userId, stats) {
+        if (!db) return;
+        await updateDoc(doc(db, "users", userId), {
             vacationEntitlement: parseFloat(stats.entitlement),
             carryOverDays: parseFloat(stats.carryOver)
         });
-    }
-};
-
-// --- NEWS API ---
-export const newsApi = {
-    async getAll() {
-        if (db) {
-            try {
-                const q = query(collection(db, "news"), orderBy("id", "desc"));
-                const querySnapshot = await getDocs(q);
-                return querySnapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
-            } catch (e) { return INITIAL_NEWS; }
-        } else { return INITIAL_NEWS; }
     },
-    async add(item) {
-        if (db) {
-            await addDoc(collection(db, "news"), { ...item, id: Date.now() }); 
-            return await newsApi.getAll();
-        } else { return []; }
-    },
-    async delete(firebaseId) {
-        if (db) {
-            await deleteDoc(doc(db, "news", firebaseId));
-            return await newsApi.getAll();
-        } else { return []; }
+    async saveFavorites(userId, favorites) {
+        if (!db) return;
+        await updateDoc(doc(db, "users", userId), { favorites });
     }
 };
 
@@ -179,44 +101,30 @@ export const vacationApi = {
     async getAllVacations() {
         if (!db) return [];
         try {
-            const currentYear = new Date().getFullYear();
-            const startOfYear = `${currentYear}-01-01`;
-            
-            // Versuch mit Filter (braucht evtl. Index)
-            try {
-                const q = query(collection(db, "vacations"), where("endDate", ">=", startOfYear), orderBy("endDate", "asc"));
-                const snapshot = await getDocs(q);
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } catch(indexError) {
-                // Fallback ohne Filter, falls Index noch nicht erstellt ist
-                const q = query(collection(db, "vacations"));
-                const snapshot = await getDocs(q);
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            }
+            const snapshot = await getDocs(collection(db, "vacations"));
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         } catch (e) { return []; }
     },
-    async addVacation(vacationData) {
+    async addVacation(data) {
         if (!db) return;
-        const workDays = calculateWorkDays(vacationData.startDate, vacationData.endDate);
-        let daysCount = workDays;
-        if (vacationData.type === 'half') daysCount = 0.5;
-        if (vacationData.type === 'workation') daysCount = workDays * 0.5;
+        const workDays = calculateWorkDays(data.startDate, data.endDate);
+        let finalCount = workDays;
+        if (data.type === 'half') finalCount = 0.5;
+        if (data.type === 'workation') finalCount = 0;
 
-        await addDoc(collection(db, "vacations"), {
-            ...vacationData,
-            daysCount, 
-            rawDays: workDays, 
+        return await addDoc(collection(db, "vacations"), {
+            ...data,
+            daysCount: finalCount,
             createdAt: serverTimestamp()
         });
-        return true;
     },
-    async deleteVacation(vacationId) {
+    async deleteVacation(id) {
         if (!db) return;
-        await deleteDoc(doc(db, "vacations", vacationId));
+        await deleteDoc(doc(db, "vacations", id));
     }
 };
 
-// --- EVENT API ---
+// --- EVENTS API ---
 export const eventApi = {
     async getAllEvents() {
         if (!db) return [];
@@ -230,26 +138,27 @@ export const eventApi = {
     },
     async deleteEvent(id) {
         if (!db) return;
-        return await deleteDoc(doc(db, "events", id));
+        await deleteDoc(doc(db, "events", id));
     },
     async getUpcoming(count = 3) {
         if (!db) return [];
         const today = new Date().toISOString().split('T')[0];
-        try {
-             const q = query(collection(db, "events"), where("startDate", ">=", today), orderBy("startDate", "asc"), limit(count));
-             const snapshot = await getDocs(q);
-             return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } catch(e) { return []; }
-    },
+        const q = query(collection(db, "events"), where("startDate", ">=", today), orderBy("startDate", "asc"), limit(count));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
 };
 
-// --- AUTH ---
-export const authService = {
-    async login(email, password) {
-        if (auth) {
-             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-             return userCredential.user;
-        }
+// --- FEEDBACK API ---
+export const feedbackApi = {
+    async submit(data) {
+        if (!db) return;
+        await addDoc(collection(db, "feedback"), { ...data, createdAt: serverTimestamp(), status: 'open' });
     },
-    async logout() { if (auth) await signOut(auth); }
+    async getAll() {
+        if (!db) return [];
+        const q = query(collection(db, "feedback"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
 };

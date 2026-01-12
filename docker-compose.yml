@@ -1,23 +1,15 @@
-version: '3'
-
 services:
-  # 1. Deine App (Das Handbook)
   k5-handbook:
     build: .
     container_name: k5-handbook
     restart: always
-    # Wir brauchen KEINE Ports mehr nach außen, da der Tunnel intern zugreift!
-    # ports:
-    #   - "3000:80"
     environment:
       - NODE_ENV=production
+    networks:
+      - k5-global
+    # Keine Ports nötig, da der Traffic über das interne Netzwerk läuft
 
-  # 2. Der Tunnel (Verbindet App mit Cloudflare)
-  k5-tunnel:
-    image: cloudflare/cloudflared:latest
-    container_name: k5-tunnel
-    restart: always
-    command: tunnel run
-    environment:
-      # WICHTIG: Hier dein Token aus dem Cloudflare Dashboard einfügen
-      - TUNNEL_TOKEN=eyJhIjoiNTM3NTRjZTRmMzA0ZTg3MzVkYTE0NjVjYzlkNDc3ZTAiLCJ0IjoiMWY3ZjY5MzQtMjA0Yi00MjIxLTljZWQtNWI2OWNmNTYyNTUyIiwicyI6IlpqUmpNVE16TkRRdFlXUmpZaTAwT0RZM0xXRTVNV0l0WWpJeFl6WTVabUU1TnpRNSJ9
+networks:
+  k5-global:
+    external: true
+    name: k5-global-network

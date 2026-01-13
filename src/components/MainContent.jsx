@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Layout, Calendar, Palmtree, Users, Wrench, Layers, 
   ArrowRight, Star, Clock, AlertCircle, ExternalLink, 
   ChevronRight, MessageSquare, Megaphone, CheckCircle, 
-  QrCode, Shield, MapPin, Ticket, Tag, TrendingUp, Construction 
+  QrCode, Shield, MapPin, Ticket, Tag, TrendingUp, Construction,
+  Cake, Gift // <-- Icons hinzugefügt
 } from 'lucide-react';
 import { SECTIONS_CONFIG, EVENT_TYPES, TICKET_PHASES } from '../config/data';
+import { userApi } from '../services/api'; // <-- API Import für Geburtstage
+import confetti from 'canvas-confetti'; // <-- Neu
 
 // Import Pages (Standard)
 import VacationView from '../pages/VacationView';
@@ -15,7 +18,7 @@ import TeamView from '../pages/TeamView';
 import ToolsView from '../pages/ToolsView';
 import QRCodeView from '../pages/QRCodeView';
 import ResourceView from '../pages/ResourceView';
-import LocationView from '../pages/LocationView'; // <--- 1. IMPORT HINZUFÜGEN
+import LocationView from '../pages/LocationView';
 
 // Import Pages (Event Ops & Guidelines)
 import AccreditationView from '../pages/AccreditationView';
@@ -34,6 +37,85 @@ export default function MainContent({
     userFavorites, handleNav, toggleFavorite, hasUpdate,
     adminFeedbackList, isPrivileged, openFeedback, onRefreshFeedback 
 }) {
+
+    const [birthdayKids, setBirthdayKids] = useState([]);
+
+    useEffect(() => {
+        if (activeTab === 'home') {
+            loadBirthdays();
+        }
+    }, [activeTab]);
+
+    const loadBirthdays = async () => {
+        try {
+            const users = await userApi.getAllUsers();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const nextTwoWeeks = new Date(today);
+            nextTwoWeeks.setDate(today.getDate() + 14);
+
+            const upcoming = users.filter(u => {
+                if (!u.birthDate) return false;
+                const bDay = new Date(u.birthDate);
+                const thisYear = new Date(today.getFullYear(), bDay.getMonth(), bDay.getDate());
+                if (thisYear < today) thisYear.setFullYear(today.getFullYear() + 1);
+                return thisYear >= today && thisYear <= nextTwoWeeks;
+            }).map(u => {
+                const bDay = new Date(u.birthDate);
+                let next = new Date(today.getFullYear(), bDay.getMonth(), bDay.getDate());
+                if (next < today) next.setFullYear(today.getFullYear() + 1);
+                return { ...u, nextBirthday: next };
+            }).sort((a,b) => a.nextBirthday - b.nextBirthday);
+
+            setBirthdayKids(upcoming);
+
+            // --- ROBUSTER KONFETTI-CHECK ---
+            const hasBirthdayToday = upcoming.some(kid => {
+                const bDayStr = kid.nextBirthday.toDateString();
+                const todayStr = new Date().toDateString();
+                return bDayStr === todayStr;
+            });
+
+            // Prüfen, ob heute jemand Geburtstag hat UND ob wir heute schon gefeuert haben
+            const confettiKey = `confetti_fired_${new Date().toISOString().split('T')[0]}`;
+            const alreadyFired = sessionStorage.getItem(confettiKey);
+
+            if (hasBirthdayToday && !alreadyFired) {
+                fireConfetti();
+                // Wir speichern im SessionStorage, dass für heute erledigt ist
+                sessionStorage.setItem(confettiKey, 'true');
+            }
+        } catch (e) { 
+            console.error("Fehler beim Laden der Geburtstage:", e); 
+        }
+    };
+
+    // Hilfsfunktion für das Konfetti-Spektakel
+    const fireConfetti = () => {
+        const duration = 3 * 1000;
+        const end = Date.now() + duration;
+
+        (function frame() {
+            confetti({
+                particleCount: 3,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: ['#2563eb', '#f43f5e', '#fbbf24'] // K5 Farben (Blau, Rose, Gelb)
+            });
+            confetti({
+                particleCount: 3,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: ['#2563eb', '#f43f5e', '#fbbf24']
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+    };
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -80,10 +162,10 @@ export default function MainContent({
 
         if (!activePhase) {
             return (
-                <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl text-white shadow-xl relative overflow-hidden h-full flex items-center justify-center p-6">
-                    <div className="text-center z-10">
+                <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl text-white shadow-xl relative overflow-hidden h-full flex items-center justify-center p-6 text-center">
+                    <div className="z-10">
                         <Ticket size={48} className="mx-auto mb-2 text-white/50"/>
-                        <h3 className="text-xl font-bold">Keine aktive Ticketphase</h3>
+                        <h3 className="text-xl font-bold text-white">Keine aktive Ticketphase</h3>
                         <p className="text-blue-200 text-sm">Der Verkauf ist aktuell pausiert oder beendet.</p>
                     </div>
                 </div>
@@ -95,44 +177,31 @@ export default function MainContent({
                 <div className="absolute -right-6 -bottom-12 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform rotate-12">
                     <Ticket size={200} />
                 </div>
-
                 <div className="p-8 flex flex-col justify-between h-full relative z-10">
                     <div className="flex justify-between items-start">
                         <div>
                             <div className="flex items-center gap-2 mb-1">
-                                <span className="bg-yellow-400 text-yellow-900 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
-                                    Aktuelle Phase
-                                </span>
+                                <span className="bg-yellow-400 text-yellow-900 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">Aktuelle Phase</span>
                                 <span className="text-xs text-blue-200 font-medium">Endet am {activePhase.date.replace('bis ', '')}</span>
                             </div>
-                            <h3 className="text-3xl font-black tracking-tight text-white mb-1">
-                                {activePhase.name}
-                            </h3>
+                            <h3 className="text-3xl font-black tracking-tight text-white mb-1">{activePhase.name}</h3>
                             <p className="text-blue-100 text-sm flex items-center gap-1">
                                 <Clock size={14}/> Noch <span className="font-bold text-white">{daysLeft} Tage</span> zum aktuellen Preis
                             </p>
                         </div>
-
                         <div className="hidden sm:flex flex-col items-center justify-center bg-white/10 backdrop-blur-md border border-white/20 w-20 h-20 rounded-full shadow-lg">
                             <span className="text-2xl font-black">{daysLeft}</span>
                             <span className="text-[9px] uppercase tracking-wider">Tage</span>
                         </div>
                     </div>
-
                     <div className="flex-1"></div>
-
                     <div className="grid grid-cols-2 gap-4 mt-6">
                         <div className="bg-black/20 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-black/30 transition-colors">
-                            <div className="flex items-center gap-2 text-blue-200 text-xs font-bold uppercase tracking-wider mb-1">
-                                <Tag size={12}/> Retailer
-                            </div>
+                            <div className="flex items-center gap-2 text-blue-200 text-xs font-bold uppercase tracking-wider mb-1"><Tag size={12}/> Retailer</div>
                             <div className="text-2xl font-black text-white">{activePhase.price}</div>
                         </div>
-                        
                         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-colors">
-                            <div className="flex items-center gap-2 text-blue-200 text-xs font-bold uppercase tracking-wider mb-1">
-                                <TrendingUp size={12}/> Non-Retailer
-                            </div>
+                            <div className="flex items-center gap-2 text-blue-200 text-xs font-bold uppercase tracking-wider mb-1"><TrendingUp size={12}/> Non-Retailer</div>
                             <div className="text-2xl font-black text-white">{activePhase.nonRetailer}</div>
                         </div>
                     </div>
@@ -157,18 +226,10 @@ export default function MainContent({
                         const dateObj = parseDate(rawStart);
                         const day = dateObj ? dateObj.getDate() : '--';
                         const month = dateObj ? dateObj.toLocaleString('de-DE', {month: 'short'}) : '---';
-                        
-                        const isIsoString = typeof rawStart === 'string' && rawStart.includes('T');
-                        const hasExplicitTime = isIsoString && !evt.allDay;
-                        let timeString = "Ganztägig";
-                        if (hasExplicitTime && dateObj) {
-                            timeString = dateObj.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'}) + " Uhr";
-                        }
-
                         const typeConfig = EVENT_TYPES[evt.type] || EVENT_TYPES['external'];
-                        
                         return (
                             <div key={evt.id} 
+                                 onClick={() => handleNav('calendar')}
                                  className={`flex gap-3 items-start group cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all shadow-sm border border-gray-100 dark:border-gray-700 border-l-4 ${typeConfig.border}`}
                             >
                                 <div className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center shrink-0 transition-colors ${typeConfig.color}`}>
@@ -176,30 +237,52 @@ export default function MainContent({
                                     <span className="text-sm font-black leading-none">{day}</span>
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <h4 className="font-bold text-gray-900 dark:text-white text-sm truncate group-hover:text-blue-600 transition-colors">
-                                        {evt.title}
-                                    </h4>
-                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        <div className="flex items-center gap-1">
-                                            <Clock size={12}/>
-                                            <span>{timeString}</span>
-                                        </div>
-                                        {evt.location && (
-                                            <div className="flex items-center gap-1 text-gray-400">
-                                                <MapPin size={12}/>
-                                                <span className="truncate max-w-[100px]">{evt.location}</span>
-                                            </div>
-                                        )}
+                                    <h4 className="font-bold text-gray-900 dark:text-white text-sm truncate group-hover:text-blue-600 transition-colors">{evt.title}</h4>
+                                    <div className="flex items-center gap-1 text-[10px] text-gray-500 mt-1">
+                                        <Clock size={10}/> <span>{evt.location || 'K5 HQ'}</span>
                                     </div>
                                 </div>
                             </div>
                         );
                     })
                 ) : (
-                    <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm">
+                    <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm py-4">
                         <Calendar size={24} className="mb-2 opacity-20"/>
                         <span>Keine Termine</span>
                     </div>
+                )}
+            </div>
+        </div>
+    );
+
+    // --- WIDGET: BIRTHDAYS ---
+    const BirthdayWidget = () => (
+        <div className="bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden h-full group">
+            <div className="absolute -right-4 -bottom-4 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform rotate-12">
+                <Gift size={120} />
+            </div>
+            <h3 className="font-bold text-white mb-4 flex items-center gap-2 relative z-10">
+                <Cake size={18}/> Geburtstage
+            </h3>
+            <div className="space-y-3 relative z-10">
+                {birthdayKids.length > 0 ? birthdayKids.map(kid => {
+                    const isToday = kid.nextBirthday.toDateString() === new Date().toDateString();
+                    return (
+                        <div key={kid.uid} className="flex items-center gap-3 bg-white/10 p-2 rounded-xl backdrop-blur-sm border border-white/5">
+                            <div className="w-8 h-8 rounded-full bg-white text-pink-600 flex items-center justify-center text-xs font-black shadow-sm">
+                                {kid.displayName?.charAt(0)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="text-sm font-bold truncate text-white">{kid.displayName}</div>
+                                <div className="text-[10px] opacity-80 truncate">{kid.department || 'K5 Team'}</div>
+                            </div>
+                            <div className={`text-[10px] font-bold px-2 py-1 rounded-lg ${isToday ? 'bg-yellow-400 text-yellow-900 animate-pulse' : 'bg-white/20 text-white'}`}>
+                                {isToday ? 'HEUTE 🥳' : kid.nextBirthday.toLocaleDateString('de-DE', {day: '2-digit', month: '2-digit'})}
+                            </div>
+                        </div>
+                    );
+                }) : (
+                    <div className="text-xs opacity-70 italic text-center py-4 text-white">Keine Geburtstage in Sicht...</div>
                 )}
             </div>
         </div>
@@ -222,9 +305,13 @@ export default function MainContent({
                     </p>
                 </div>
 
+                {/* Dashboard Grid - Jetzt 3-Spaltig auf Desktop */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 items-stretch">
-                    <div className="md:col-span-2"><TicketWidget /></div>
-                    <div className="md:col-span-1"><UpcomingWidget /></div>
+                    <div className="md:col-span-1 lg:col-span-2"><TicketWidget /></div>
+                    <div className="md:col-span-1 flex flex-col gap-6">
+                        <div className="flex-1"><UpcomingWidget /></div>
+                        <div className="flex-1"><BirthdayWidget /></div>
+                    </div>
                 </div>
 
                 {favoriteCards.length > 0 && (
@@ -256,7 +343,6 @@ export default function MainContent({
                                 className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden"
                             >
                                 {updated && <div className="absolute top-4 right-4 flex items-center gap-1 bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full"><AlertCircle size={10}/> NEU</div>}
-                                
                                 <div className="flex justify-between items-start mb-4">
                                     <div className={`w-12 h-12 rounded-xl bg-${section.color}-100 dark:bg-${section.color}-900/30 text-${section.color}-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
                                         <section.icon size={24} />
@@ -268,10 +354,8 @@ export default function MainContent({
                                         <Star size={18} className={isFav ? "fill-current" : ""} />
                                     </button>
                                 </div>
-                                
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 transition-colors">{section.title}</h3>
                                 <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-6 h-10 line-clamp-2">{section.desc}</p>
-                                
                                 <div className="flex items-center text-sm font-bold text-blue-600 dark:text-blue-400 group-hover:gap-2 transition-all">
                                     Öffnen <ArrowRight size={16} className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
@@ -279,8 +363,6 @@ export default function MainContent({
                         );
                     })}
                 </div>
-                
-                {/* Footer einfügen */}
                 <Footer />
             </div>
         );
@@ -290,11 +372,8 @@ export default function MainContent({
     if (activeTab === 'calendar') return <CalendarView currentUser={user} />;
     if (activeTab === 'vacation') return <VacationView currentUser={user} />;
     if (activeTab === 'team') return <TeamView />;
-    
-    // --- TOOLS & RESOURCES ---
     if (activeTab === 'tools') return <ToolsView handleNav={handleNav} />; 
     if (activeTab === 'tool_qr') return <QRCodeView handleNav={handleNav} />; 
-    // 2. HIER IST DIE NEUE ROUTE:
     if (activeTab === 'tool_location') return <LocationView handleNav={handleNav} />; 
     if (activeTab === 'resources') return <ResourceView />;
 
@@ -307,7 +386,6 @@ export default function MainContent({
     if (activeTab === 'votings') return <VotingView openFeedback={openFeedback} />; 
     if (activeTab === 'automation') return <AutomationView />;
 
-    // --- PLATZHALTER ---
     if (activeTab === 'tickets') { 
         return (
             <div className="flex flex-col items-center justify-center h-[60vh] text-center animate-in fade-in">
@@ -315,23 +393,17 @@ export default function MainContent({
                     <Construction size={48} className="text-amber-600 dark:text-amber-400" />
                 </div>
                 <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2">Coming Soon</h2>
-                <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-8">
-                    Die Dokumentation zur Ticketlogik wird gerade erstellt.
-                </p>
-                <button onClick={() => handleNav('home')} className="text-blue-600 font-bold hover:underline">
-                    Zurück zum Dashboard
-                </button>
+                <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-8">Die Dokumentation zur Ticketlogik wird gerade erstellt.</p>
+                <button onClick={() => handleNav('home')} className="text-blue-600 font-bold hover:underline">Zurück zum Dashboard</button>
             </div>
         );
     }
 
-    // --- ADMIN VIEW ---
     if (activeTab === 'admin') {
         return isPrivileged 
-            ? <AdminDashboard feedbackList={adminFeedbackList} onRefreshFeedback={onRefreshFeedback} /> 
+            ? <AdminDashboard feedbackList={adminFeedbackList} onRefreshFeedback={onRefreshFeedback} currentUser={user} />
             : <div className="flex flex-col items-center justify-center h-96 text-center animate-in fade-in"><div className="bg-red-100 text-red-600 p-4 rounded-full mb-4"><Shield size={48}/></div><h2 className="text-2xl font-bold text-gray-900 dark:text-white">Zugriff verweigert</h2><p className="text-gray-500 mt-2">Du hast keine Berechtigung für diesen Bereich.</p><button onClick={() => handleNav('home')} className="mt-6 text-blue-600 font-bold hover:underline">Zurück zum Dashboard</button></div>;
     }
 
-    // --- FALLBACK ---
     return <div className="text-center py-20 text-gray-400">Inhalt nicht gefunden: {activeTab}</div>;
 }

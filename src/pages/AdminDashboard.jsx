@@ -3,7 +3,7 @@ import { MessageSquare, Users, Shield, CheckCircle, Trash2, RefreshCw } from 'lu
 import AdminUserManagement from './AdminUserManagement'; 
 import { feedbackApi } from '../services/api'; // <--- API Importieren
 
-export default function AdminDashboard({ feedbackList = [], onRefreshFeedback }) {
+export default function AdminDashboard({ feedbackList = [], onRefreshFeedback, currentUser }) {
     const [activeSubTab, setActiveSubTab] = useState('feedback');
     const [loadingAction, setLoadingAction] = useState(null);
 
@@ -165,7 +165,7 @@ export default function AdminDashboard({ feedbackList = [], onRefreshFeedback })
 
                 {/* TAB 2: USER MANAGEMENT */}
                 {activeSubTab === 'users' && (
-                    <AdminUserManagement />
+                    <AdminUserManagement currentUser={currentUser} />
                 )}
 
             </div>

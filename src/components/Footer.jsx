@@ -5,14 +5,10 @@ export default function Footer() {
     
     // Interne "Weisheiten" oder motivierende Sprüche
     const quotes = [
-        "Retail is detail.",
+        "Energizing E-Commerce",
+        "Sky is the limit",
         "Nach dem Event ist vor dem Event.",
         "Tickets don't sell themselves (yet).",
-        "Made with coffee and ❤️ in Berlin.",
-        "Stay hungry, stay foolish, stay K5.",
-        "Don't panic! It's just a database.",
-        "Quality is not an act, it is a habit.",
-        "Wir lieben Retail. Und Excel.",
         "Einlass ist erst, wenn der Scanner piept."
     ];
 

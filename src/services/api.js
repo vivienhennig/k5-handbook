@@ -1,5 +1,5 @@
 import { auth, db } from '../config/firebase';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from 'firebase/auth';
 import { 
     collection, addDoc, getDocs, doc, getDoc, setDoc, deleteDoc, 
     query, orderBy, serverTimestamp, updateDoc, where, limit 
@@ -31,13 +31,23 @@ export const calculateWorkDays = (startStr, endStr) => {
     return count;
 };
 
-// --- AUTH SERVICE (Wieder da!) ---
+// --- AUTH SERVICE (Wieder da!) --
 export const authService = {
+    // Vorhandener Login
     async login(email, password) {
         if (!auth) throw new Error("Auth not initialized");
         const cred = await signInWithEmailAndPassword(auth, email, password);
         return cred.user;
     },
+
+    // Neue Registrierungs-Funktion
+    async register(email, password) {
+        if (!auth) throw new Error("Auth not initialized");
+        // Erstellt den User in Firebase Auth
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        return cred.user;
+    },
+
     async logout() { 
         if (auth) await signOut(auth); 
     }

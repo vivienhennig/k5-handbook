@@ -41,3 +41,5 @@ Environment Variables (Sicherheit!)
 Testing
 
 coverage
+
+docker-compose.override.yml

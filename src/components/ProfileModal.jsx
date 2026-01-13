@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { X, Save, User, Briefcase, Building2, Loader2, Image as ImageIcon, List, Cake } from 'lucide-react';
 import { userApi } from '../services/api';
 import { DEPARTMENT_COLORS } from '../config/data';
+import { useToast } from '../context/ToastContext';
 
 export default function ProfileModal({ user, onClose, onUpdate }) {
+    const { addToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     
     // Form State initialisieren
@@ -27,7 +29,7 @@ export default function ProfileModal({ user, onClose, onUpdate }) {
             onClose();
         } catch (error) {
             console.error("Fehler beim Speichern:", error);
-            alert("Fehler beim Speichern des Profils.");
+            useToast("Fehler beim Speichern des Profils.");
         } finally {
             setIsLoading(false);
         }

@@ -6,10 +6,10 @@ services:
     environment:
       - NODE_ENV=production
     networks:
-      - k5-global
-    # Keine Ports nötig, da der Traffic über das interne Netzwerk läuft
-
+      - k5-global-network
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
 networks:
-  k5-global:
+  k5-global-network:
     external: true
-    name: k5-global-network
+

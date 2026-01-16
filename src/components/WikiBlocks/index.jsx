@@ -103,35 +103,50 @@ export const ImageBlock = ({ content, isEditing, onChange, onLightbox }) => (
 
 // --- TABLE BLOCK ---
 
-
 export const TableBlock = ({ content, isEditing, onChange }) => {
-    // Hilfsfunktionen für die Struktur-Änderung
+    // Falls content noch das alte Format (Array) hat oder leer ist, 
+    // konvertieren wir es hier on-the-fly in die neue Objekt-Struktur
+    const safeContent = React.useMemo(() => {
+        if (!content) return { rows: [{ cells: ["Spalte 1", "Spalte 2"] }, { cells: ["", ""] }] };
+        if (Array.isArray(content)) {
+            return { rows: content.map(row => ({ cells: Array.isArray(row) ? row : [""] })) };
+        }
+        return content;
+    }, [content]);
+
+    const rows = safeContent.rows || [];
+
+    const updateCell = (rowIndex, colIndex, value) => {
+        const newRows = JSON.parse(JSON.stringify(rows)); // Tiefe Kopie
+        newRows[rowIndex].cells[colIndex] = value;
+        onChange({ rows: newRows });
+    };
+
     const addRow = () => {
-        const newRow = new Array(content[0].length).fill("");
-        onChange([...content, newRow]);
+        const numCols = rows[0]?.cells.length || 1;
+        const newRow = { cells: new Array(numCols).fill("") };
+        onChange({ rows: [...rows, newRow] });
     };
 
     const deleteRow = (rowIndex) => {
-        if (content.length <= 2) return; // Verhindert das Löschen der letzten Datenzeile
-        const newTable = content.filter((_, i) => i !== rowIndex);
-        onChange(newTable);
+        if (rows.length <= 2) return;
+        const newRows = rows.filter((_, i) => i !== rowIndex);
+        onChange({ rows: newRows });
     };
 
     const addColumn = () => {
-        const newTable = content.map(row => [...row, ""]);
-        onChange(newTable);
+        const newRows = rows.map(row => ({
+            cells: [...row.cells, ""]
+        }));
+        onChange({ rows: newRows });
     };
 
     const deleteColumn = (colIndex) => {
-        if (content[0].length <= 1) return; // Mindestens eine Spalte muss bleiben
-        const newTable = content.map(row => row.filter((_, j) => j !== colIndex));
-        onChange(newTable);
-    };
-
-    const updateCell = (rowIndex, colIndex, value) => {
-        const newTable = [...content];
-        newTable[rowIndex][colIndex] = value;
-        onChange(newTable);
+        if (rows[0].cells.length <= 1) return;
+        const newRows = rows.map(row => ({
+            cells: row.cells.filter((_, j) => j !== colIndex)
+        }));
+        onChange({ rows: newRows });
     };
 
     return (
@@ -140,7 +155,7 @@ export const TableBlock = ({ content, isEditing, onChange }) => {
                 <table className="w-full text-left text-sm border-collapse">
                     <thead>
                         <tr className="bg-gray-50/50 dark:bg-gray-800/50">
-                            {content[0].map((cell, j) => (
+                            {rows[0]?.cells.map((cell, j) => (
                                 <th key={j} className="p-4 border-b dark:border-gray-800 group/col relative">
                                     <div className="flex flex-col gap-1">
                                         {isEditing ? (
@@ -151,9 +166,9 @@ export const TableBlock = ({ content, isEditing, onChange }) => {
                                                     onChange={e => updateCell(0, j, e.target.value)}
                                                 />
                                                 <button 
+                                                    type="button"
                                                     onClick={() => deleteColumn(j)}
                                                     className="opacity-0 group-hover/col:opacity-100 text-red-400 hover:text-red-600 transition-all transform hover:scale-110"
-                                                    title="Spalte löschen"
                                                 >
                                                     <XCircle size={14}/>
                                                 </button>
@@ -168,9 +183,9 @@ export const TableBlock = ({ content, isEditing, onChange }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {content.slice(1).map((row, i) => (
+                        {rows.slice(1).map((row, i) => (
                             <tr key={i} className="hover:bg-gray-50/30 dark:hover:bg-gray-800/20 group/row transition-colors">
-                                {row.map((cell, j) => (
+                                {row.cells.map((cell, j) => (
                                     <td key={j} className="p-4 border-b border-gray-50 dark:border-gray-800 transition-all">
                                         {isEditing ? (
                                             <input 
@@ -184,9 +199,9 @@ export const TableBlock = ({ content, isEditing, onChange }) => {
                                 {isEditing && (
                                     <td className="p-4 border-b border-gray-50 dark:border-gray-800 text-right">
                                         <button 
+                                            type="button"
                                             onClick={() => deleteRow(i + 1)}
                                             className="opacity-0 group-hover/row:opacity-100 text-red-300 hover:text-red-500 transition-all transform hover:scale-110"
-                                            title="Zeile löschen"
                                         >
                                             <Trash2 size={14}/>
                                         </button>
@@ -198,16 +213,17 @@ export const TableBlock = ({ content, isEditing, onChange }) => {
                 </table>
             </div>
             
-            {/* Controls zum Hinzufügen (Nur im Edit-Modus) */}
             {isEditing && (
                 <div className="flex gap-3 justify-start animate-in slide-in-from-top-2">
                     <button 
+                        type="button"
                         onClick={addRow}
                         className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[10px] font-black uppercase hover:bg-blue-100 transition-all active:scale-95 border border-blue-100 dark:border-blue-800"
                     >
                         <Plus size={12}/> Zeile hinzufügen
                     </button>
                     <button 
+                        type="button"
                         onClick={addColumn}
                         className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-xl text-[10px] font-black uppercase hover:bg-gray-100 transition-all active:scale-95 border border-gray-100 dark:border-gray-700"
                     >

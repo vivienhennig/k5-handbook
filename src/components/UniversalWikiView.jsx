@@ -119,9 +119,15 @@ export default function UniversalWikiView({ currentUser, wikiId, title, icon: Ic
         let newContent = "";
         if (type === 'headline') newContent = { text: "Titel", level: 2 };
         if (type === 'image') newContent = { urls: [""], layout: 'single' };
-        if (type === 'table') newContent = [["H1", "H2"], ["", ""]];
+        if (type === 'table') newContent = { 
+            rows: [
+                { cells: ["Header 1", "Header 2"] }, 
+                { cells: ["", ""] }
+            ] 
+        };
         if (type === 'checklist') newContent = [{ id: Date.now(), text: "Neuer Punkt", checked: false }];
         if (type === 'color') newContent = { hex: "#3b82f6", label: "Farbe" };
+
         setContent(prev => ({ ...prev, blocks: [...prev.blocks, { ...base, content: newContent }] }));
     };
 

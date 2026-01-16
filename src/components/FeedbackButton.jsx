@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MessageSquarePlus, X, Send, Loader2 } from 'lucide-react';
-import { feedbackApi } from '../services/api'; // <--- Importieren
+import { feedbackApi } from '../services/api';
 
 export default function FeedbackButton({ user }) { 
     const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +14,6 @@ export default function FeedbackButton({ user }) {
         try {
             const userName = user?.displayName || user?.name || 'Anonym';
             
-            // HIER DIE ÄNDERUNG: Direkt Firebase nutzen
             await feedbackApi.submit({
                 user: userName,
                 context: 'General', 

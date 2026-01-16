@@ -1,11 +1,10 @@
 import React from 'react';
 import * as Icons from 'lucide-react'; 
 import { 
-    Home, Calendar, Palmtree, Users, Wrench, Database, Cpu, 
-    ChevronRight, LayoutGrid, Shield, PlusCircle, LogOut, User, Settings,
-    FileText, Tent, BookOpen
+    Home, Calendar, Palmtree, Users, Wrench, Database,
+    ChevronRight, LayoutGrid, PlusCircle, LogOut, Settings,
+    Tent, BookOpen
 } from 'lucide-react';
-// HIER: Import deines neuen Toggles
 import ThemeToggle from '../components/ThemeToggle'; 
 
 export default function Sidebar({ 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Trash2, Save, Edit3, Check, Info } from 'lucide-react';
+import { Download, Trash2, Edit3, Check, Info } from 'lucide-react';
 
 export default function WikiHeader({ 
     title, wikiId, icon: Icon, isEditing, isPrivileged, 

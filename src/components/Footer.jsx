@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Heart, Activity, Coffee, Terminal } from 'lucide-react';
+import { Heart, Coffee, Terminal } from 'lucide-react';
 
 export default function Footer() {
     
@@ -8,7 +8,9 @@ export default function Footer() {
         "Energizing E-Commerce",
         "Sky is the limit",
         "Nach dem Event ist vor dem Event.",
-        "Tickets don't sell themselves (yet).",
+        "Wo wir sind ist Vorne",
+        "Eat the frog in the morning",
+        "Trust the process",
         "Einlass ist erst, wenn der Scanner piept."
     ];
 

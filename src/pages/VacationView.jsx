@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Palmtree, Clock } from 'lucide-react';
+import { Palmtree } from 'lucide-react';
 import { STANDARD_VACATION_DAYS, DEPARTMENT_COLORS } from '../config/data';
 import { vacationApi, userApi, calculateWorkDays } from '../services/api'; 
 import { useToast } from '../context/ToastContext';

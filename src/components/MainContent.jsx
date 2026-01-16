@@ -74,53 +74,53 @@ export default function MainContent({
     }, [activeTab]);
 
     // 2. RSVP LOGIK
-const handleRSVP = async (eventId, status) => {
-    // 1. Sicherheitscheck
-    if (!eventId || !user) {
-        addToast("Fehler: Nutzer oder Event nicht erkannt", "error");
-        return;
-    }
-
-    try {
-        // 2. API Call ausführen
-        await eventApi.updateRSVP(eventId, user.uid, status, user.displayName);
-
-        // 3. Den State im Parent aktualisieren
-        // Wir nutzen eine Funktion in setSelectedEvent, um sicherzustellen, 
-        // dass wir auf dem aktuellsten Stand arbeiten
-        setSelectedEvent(prevEvent => {
-            if (!prevEvent || prevEvent.id !== eventId) return prevEvent;
-
-            // Neue Teilnehmer-Liste erstellen
-            const updatedParticipants = {
-                ...(prevEvent.participants || {}),
-                [user.uid]: {
-                    status: status,
-                    name: user.displayName,
-                    updatedAt: new Date().toISOString()
-                }
-            };
-
-            // Das aktualisierte Event-Objekt zurückgeben
-            return {
-                ...prevEvent,
-                participants: updatedParticipants
-            };
-        });
-
-        // 4. Feedback an den User
-        addToast(status === 'going' ? "Zusage gespeichert! 🎉" : "Absage gespeichert.");
-        
-        // 5. Hintergrund-Daten aktualisieren (falls vorhanden)
-        if (typeof loadEvents === 'function') {
-            await loadEvents();
+    const handleRSVP = async (eventId, status) => {
+        // 1. Sicherheitscheck
+        if (!eventId || !user) {
+            addToast("Fehler: Nutzer oder Event nicht erkannt", "error");
+            return;
         }
 
-    } catch (error) {
-        console.error("RSVP Error:", error);
-        addToast("Fehler beim Speichern der Teilnahme", "error");
-    }
-};
+        try {
+            // 2. API Call ausführen
+            await eventApi.updateRSVP(eventId, user.uid, status, user.displayName);
+
+            // 3. Den State im Parent aktualisieren
+            // Wir nutzen eine Funktion in setSelectedEvent, um sicherzustellen, 
+            // dass wir auf dem aktuellsten Stand arbeiten
+            setSelectedEvent(prevEvent => {
+                if (!prevEvent || prevEvent.id !== eventId) return prevEvent;
+
+                // Neue Teilnehmer-Liste erstellen
+                const updatedParticipants = {
+                    ...(prevEvent.participants || {}),
+                    [user.uid]: {
+                        status: status,
+                        name: user.displayName,
+                        updatedAt: new Date().toISOString()
+                    }
+                };
+
+                // Das aktualisierte Event-Objekt zurückgeben
+                return {
+                    ...prevEvent,
+                    participants: updatedParticipants
+                };
+            });
+
+            // 4. Feedback an den User
+            addToast(status === 'going' ? "Zusage gespeichert! 🎉" : "Absage gespeichert.");
+        
+            // 5. Hintergrund-Daten aktualisieren (falls vorhanden)
+            if (typeof loadEvents === 'function') {
+                await loadEvents();
+            }
+
+        } catch (error) {
+            console.error("RSVP Error:", error);
+            addToast("Fehler beim Speichern der Teilnahme", "error");
+        }
+    };
 
     // 3. HILFSFUNKTION ZEITSTEMPEL
     const getTimeAgo = (timestamp) => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-    X, Calendar as CalendarIcon, MapPin, Globe, 
+    X, Calendar as CalendarIcon, MapPin, 
     Users, Check, XCircle, Trash2, Sparkles 
 } from 'lucide-react';
 import { EVENT_TYPES } from '../config/data';

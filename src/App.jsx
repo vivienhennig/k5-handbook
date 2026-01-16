@@ -4,9 +4,8 @@ import MainContent from './components/MainContent';
 import LoginView from './pages/LoginView';
 import FeedbackButton from './components/FeedbackButton';
 import ProfileModal from './components/ProfileModal';
-import WikiCreateModal from './components/WikiCreateModal'; // Import für das Wiki-Erstellen
-import { Menu, X } from 'lucide-react';
-import { onAuthStateChanged, signOut } from 'firebase/auth'; // signOut ergänzt
+import WikiCreateModal from './components/WikiCreateModal';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './config/firebase';
 import { userApi, eventApi, feedbackApi, contentApi } from './services/api';
 
@@ -18,10 +17,10 @@ function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isWikiCreateModalOpen, setIsWikiCreateModalOpen] = useState(false); // NEU
+  const [isWikiCreateModalOpen, setIsWikiCreateModalOpen] = useState(false);
   
   // Data States
-  const [customWikis, setCustomWikis] = useState([]); // NEU: Damit Sidebar mappen kann
+  const [customWikis, setCustomWikis] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [adminFeedbackList, setAdminFeedbackList] = useState([]);
 
@@ -34,7 +33,7 @@ function App() {
         setUser({ ...currentUser, ...dbUser });
         loadDashboardData();
         loadFeedback();
-        loadNavigation(); // Wikis für die Sidebar laden
+        loadNavigation();
       } else {
         setUser(null);
         setUserData(null);

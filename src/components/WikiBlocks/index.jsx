@@ -1,12 +1,9 @@
 import React from 'react';
 import { 
-    AlignLeft, ImageIcon, TableIcon, CheckSquare, 
-    PlayCircle, FileText, Minus, AlertCircle, AlertTriangle, 
-    Heading, Maximize2, MinusCircle, Check, ExternalLink, Palette, Plus, Trash2, XCircle, CheckIcon
+    PlayCircle, FileText, AlertCircle, AlertTriangle, Maximize2, MinusCircle, ExternalLink, Plus, Trash2, XCircle, CheckIcon
 } from 'lucide-react';
 
 // --- HEADLINE BLOCK ---
-// Ersetze den HeadlineBlock in deiner WikiBlocks/index.jsx durch diesen:
 export const HeadlineBlock = ({ content, isEditing, onChange }) => {
     const level = content.level || 2; // Default H2
 

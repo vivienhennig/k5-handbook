@@ -1,5 +1,5 @@
 import React from 'react';
-import { Laptop, ShieldCheck, ExternalLink } from 'lucide-react';
+import { Laptop } from 'lucide-react';
 import { RESOURCE_LINKS, TECH_STACK } from '../config/data';
 import ResourceSection from '../components/Resources/ResourceSection';
 

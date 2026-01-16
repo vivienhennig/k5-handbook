@@ -131,6 +131,41 @@ export default function UniversalWikiView({ currentUser, wikiId, title, icon: Ic
         setContent(prev => ({ ...prev, blocks: [...prev.blocks, { ...base, content: newContent }] }));
     };
 
+    const moveBlock = (id, direction) => {
+    const index = content.blocks.findIndex(b => b.id === id);
+    if (index === -1) return;
+
+    const newBlocks = [...content.blocks];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+    // Prüfen, ob Verschieben möglich ist (nicht über die Grenzen hinaus)
+    if (targetIndex < 0 || targetIndex >= newBlocks.length) return;
+
+    // Blöcke tauschen
+    [newBlocks[index], newBlocks[targetIndex]] = [newBlocks[targetIndex], newBlocks[index]];
+
+    setContent(prev => ({ ...prev, blocks: newBlocks }));
+};
+
+const duplicateBlock = (id) => {
+    const index = content.blocks.findIndex(b => b.id === id);
+    if (index === -1) return;
+
+    const blockToCopy = content.blocks[index];
+    // Wir erstellen eine tiefe Kopie und geben ihr eine neue ID
+    const newBlock = {
+        ...JSON.parse(JSON.stringify(blockToCopy)),
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 5)
+    };
+
+    const newBlocks = [...content.blocks];
+    // Den neuen Block direkt unter dem Original einfügen
+    newBlocks.splice(index + 1, 0, newBlock);
+
+    setContent(prev => ({ ...prev, blocks: newBlocks }));
+    addToast("Block dupliziert! 📋");
+};
+
     // --- OPTIMIERTE LIGHTBOX MIT NAVIGATION ---
     const Lightbox = () => activeLightbox && createPortal(
         <div className="fixed inset-0 z-[10000] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 cursor-zoom-out" onClick={() => setActiveLightbox(null)}>
@@ -185,17 +220,31 @@ export default function UniversalWikiView({ currentUser, wikiId, title, icon: Ic
                             block.width === '3/4' ? 'w-full lg:w-[calc(75%-6px)]' : 'w-full';
 
                         return (
-                            <div key={block.id} className={`group relative transition-all duration-300 flex flex-col ${widthClass} ${block.type === 'divider' ? 'py-4' : block.style === 'card' ? 'bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-700 shadow-sm' : 'p-4'}`}>
-                                {isEditing && (
-                                    <WikiBlockControls 
-                                        block={block} 
-                                        onUpdate={updateBlock} 
-                                        onDelete={() => setContent(prev => ({...prev, blocks: prev.blocks.filter(b => b.id !== block.id)}))} 
-                                    />
-                                )}
+        <div 
+            key={block.id} 
+            className={`group relative transition-all duration-300 flex flex-col ${widthClass} ...`}
+        >
+            {isEditing && (
+                <WikiBlockControls 
+                    block={block} 
+                    onUpdate={updateBlock} 
+                    onMove={(dir) => moveBlock(block.id, dir)}
+                    onDuplicate={() => duplicateBlock(block.id)}
+                    onDelete={() => setContent(prev => ({...prev, blocks: prev.blocks.filter(b => b.id !== block.id)}))} 
+                />
+            )}
 
                                 {block.type === 'headline' && <Blocks.HeadlineBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}
-                                {block.type === 'text' && <Blocks.TextBlock content={block.content} isEditing={isEditing} renderLinkedText={() => {}} onChange={(v) => updateBlock(block.id, 'content', v)} />}
+
+{block.type === 'text' && (
+    <Blocks.TextBlock 
+        content={block.content} 
+        isEditing={isEditing} 
+        // Ändere dies: Statt einer leeren Funktion geben wir den Text einfach zurück
+        renderLinkedText={(text) => text} 
+        onChange={(v) => updateBlock(block.id, 'content', v)} 
+    />
+)}
                                 {block.type === 'image' && <Blocks.ImageBlock content={block.content} isEditing={isEditing} onLightbox={setActiveLightbox} onChange={(v) => updateBlock(block.id, 'content', v)} />}
                                 {block.type === 'video' && <Blocks.VideoBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}
                                 {block.type === 'table' && <Blocks.TableBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshCw, CheckCircle, Trash2, MessageSquare } from 'lucide-react';
+import { RefreshCw, CheckCircle, Trash2 } from 'lucide-react';
 
 export default function FeedbackInbox({ feedbackList, onRefresh, onAction, loadingAction }) {
     const activeFeedback = feedbackList?.filter(item => item.status !== 'resolved') || [];

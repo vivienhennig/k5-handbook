@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Shield, User, Save, X, Edit2, Check, Lock } from 'lucide-react';
+import { Search, User, X, Edit2, Check, Lock } from 'lucide-react';
 import { userApi } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 

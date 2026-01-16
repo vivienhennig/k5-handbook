@@ -3,6 +3,8 @@ services:
     build: .
     container_name: k5-handbook
     restart: always
+    ports:
+      - "8083:80"
     environment:
       - NODE_ENV=production
     networks:
@@ -12,4 +14,3 @@ services:
 networks:
   k5-global-network:
     external: true
-

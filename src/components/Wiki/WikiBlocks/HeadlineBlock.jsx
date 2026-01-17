@@ -1,41 +1,53 @@
 import React from 'react';
 
-// --- HEADLINE BLOCK ---
-export default function HeadlineBlock ({ content, isEditing, onChange }) {
-    const level = content.level || 2; // Default H2
+export default function HeadlineBlock({ content, isEditing, onChange }) {
+    const level = content.level || 2; 
 
-    // Dynamische Größenklassen basierend auf dem Level
+    // CI-konforme Größenklassen: Aeonik Black, kein Italic, enges Tracking
     const sizeClasses = {
-        2: "text-3xl font-black italic uppercase tracking-tight",
-        3: "text-2xl font-black italic tracking-tight",
-        4: "text-xl font-bold italic",
-        5: "text-lg font-bold",
-        6: "text-base font-bold uppercase tracking-widest text-gray-500"
+        2: "text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none",
+        3: "text-2xl md:text-3xl font-black uppercase tracking-tight leading-tight",
+        4: "text-xl font-bold uppercase tracking-widest leading-snug",
+        5: "text-lg font-bold tracking-normal",
+        6: "text-xs font-bold uppercase tracking-[0.3em] text-k5-sand"
     };
 
     if (isEditing) {
         return (
-            <div className="w-full space-y-2">
-                <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black text-blue-500 bg-blue-50 px-2 py-0.5 rounded">H{level}</span>
+            <div className="w-full group/edit relative py-2 animate-in fade-in duration-300">
+                <div className="flex items-center gap-4">
+                    <div className="flex flex-col items-center">
+                        <span className="text-[9px] font-black text-white bg-k5-digital px-1.5 py-0.5 rounded-sm shadow-sm">
+                            H{level}
+                        </span>
+                        <div className="w-px h-full bg-k5-digital/20 mt-1" />
+                    </div>
                     <input 
-                        className={`${sizeClasses[level]} bg-transparent border-b border-blue-500/30 w-full outline-none dark:text-white`} 
+                        className={`${sizeClasses[level]} bg-k5-light-grey/20 dark:bg-k5-deep/10 border-b-2 border-k5-digital/30 focus:border-k5-digital w-full outline-none dark:text-white px-2 py-1 transition-all placeholder:opacity-20`} 
                         value={content.text} 
                         onChange={e => onChange({ ...content, text: e.target.value })} 
-                        placeholder={`Überschrift H${level}...`}
+                        placeholder={`Headline Level ${level}...`}
                     />
                 </div>
             </div>
         );
     }
 
-    // Das entsprechende HTML-Tag dynamisch wählen
     const Tag = `h${level}`;
+    
     return (
-        <
-            // @ts-ignore
-        Tag className={`${sizeClasses[level]} text-gray-900 dark:text-white border-l-4 border-blue-600 pl-4`}>
-            {content.text}
-        </Tag>
+        <div className={`mt-12 mb-6 first:mt-0 group`}>
+            <Tag 
+                id={content.id} // Wichtig für das Inhaltsverzeichnis (TOC)
+                className={`${sizeClasses[level]} text-k5-black dark:text-white relative`}
+            >
+                {content.text}
+                
+                {/* CI-Akzent: Nur bei H2 und H3 zeigen wir den massiven K5-Balken */}
+                {level <= 3 && (
+                    <div className="w-12 h-1.5 bg-k5-digital mt-4 rounded-full group-hover:w-20 transition-all duration-500" />
+                )}
+            </Tag>
+        </div>
     );
-};
+}

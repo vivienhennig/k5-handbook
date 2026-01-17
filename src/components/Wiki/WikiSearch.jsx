@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom'; // NEU: Für das Beamen aus der Sidebar
-import { Search, FileText, X, Command, ArrowRight, Zap, ExternalLink, ShieldCheck } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Search, FileText, X, Command, ArrowRight, Zap, ExternalLink, ShieldCheck, Sparkles } from 'lucide-react';
 import { contentApi } from '../../services/api';
 
 export default function WikiSearch({ handleNav, isMobile, closeMobileMenu }) {
@@ -65,38 +65,49 @@ export default function WikiSearch({ handleNav, isMobile, closeMobileMenu }) {
         if (isMobile) closeMobileMenu();
     };
 
-    // Das Overlay-Element, das per Portal "gebeamt" wird
     const SearchOverlay = (
         <>
-            {/* Backdrop */}
             <div 
-                className="fixed inset-0 bg-black/60 backdrop-blur-md z-[10000] animate-in fade-in duration-300"
+                className="fixed inset-0 bg-k5-black/70 backdrop-blur-md z-[10000] animate-in fade-in duration-300"
                 onClick={() => setIsOpen(false)}
             />
-            {/* Modal */}
-            <div className="fixed top-[10%] left-1/2 -translate-x-1/2 w-[95vw] md:w-[650px] bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] z-[10001] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                <div className="p-6 border-b border-gray-50 dark:border-gray-800 flex items-center gap-4">
-                    <div className="p-2.5 bg-blue-50 dark:bg-blue-900/30 rounded-xl text-blue-600"><Zap size={22} className="animate-pulse" /></div>
-                    <input autoFocus className="bg-transparent border-none outline-none w-full text-xl font-bold dark:text-white placeholder:text-gray-300" placeholder="Command Center..." value={query} onChange={(e) => setQuery(e.target.value)} />
-                    <button onClick={() => setIsOpen(false)} className="p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"><X size={24} /></button>
+            <div className="fixed top-[12%] left-1/2 -translate-x-1/2 w-[95vw] md:w-[700px] bg-white dark:bg-k5-black border border-gray-100 dark:border-k5-deep rounded-k5-lg shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] z-[10001] overflow-hidden animate-in fade-in zoom-in-95 duration-200 font-sans">
+                <div className="p-8 border-b border-gray-100 dark:border-k5-deep flex items-center gap-6">
+                    <div className="p-3 bg-k5-light-grey dark:bg-k5-deep/30 rounded-k5-sm text-k5-digital">
+                        <Sparkles size={24} className="animate-pulse" />
+                    </div>
+                    <input 
+                        autoFocus 
+                        className="bg-transparent border-none outline-none w-full text-2xl font-bold dark:text-white placeholder:text-gray-300 tracking-tight" 
+                        placeholder="Command Center..." 
+                        value={query} 
+                        onChange={(e) => setQuery(e.target.value)} 
+                    />
+                    <button onClick={() => setIsOpen(false)} className="p-3 text-gray-400 hover:bg-k5-light-grey dark:hover:bg-k5-deep rounded-k5-md transition-all">
+                        <X size={24} />
+                    </button>
                 </div>
-                <div className="max-h-[60vh] overflow-y-auto p-3 custom-scrollbar">
+
+                <div className="max-h-[60vh] overflow-y-auto p-4 custom-scrollbar">
                     {results.length > 0 ? (
-                        <div className="space-y-6 pb-2">
+                        <div className="space-y-8 pb-4">
                             {['System & Tools', 'Handbook Wissen'].map(cat => {
                                 const catResults = results.filter(r => r.category === cat);
                                 if (catResults.length === 0) return null;
                                 return (
-                                    <div key={cat} className="space-y-1">
-                                        <h4 className="px-5 py-1 text-[10px] font-black uppercase tracking-[0.3em] text-blue-600/50 dark:text-blue-400/50">{cat}</h4>
+                                    <div key={cat} className="space-y-2">
+                                        <h4 className="px-6 py-1 text-[10px] font-bold uppercase tracking-[0.3em] text-k5-sand">{cat}</h4>
                                         {catResults.map((res, i) => (
-                                            <button key={i} onClick={() => onSelect(res)} className="w-full flex items-center gap-5 p-4 hover:bg-gray-50 dark:hover:bg-blue-900/20 rounded-[1.5rem] transition-all text-left group">
-                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm transition-all ${res.type === 'action' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/40' : 'bg-gray-100 text-gray-400 dark:bg-gray-800 group-hover:bg-blue-600 group-hover:text-white'}`}>{res.icon}</div>
+                                            <button key={i} onClick={() => onSelect(res)} className="w-full flex items-center gap-5 p-5 hover:bg-k5-light-grey dark:hover:bg-k5-deep/40 rounded-k5-md transition-all text-left group border border-transparent hover:border-gray-100 dark:hover:border-k5-deep/50">
+                                                <div className={`w-14 h-14 rounded-k5-sm flex items-center justify-center shadow-sm transition-all ${res.type === 'action' ? 'bg-k5-sand/20 text-k5-sand' : 'bg-k5-light-grey text-gray-400 dark:bg-k5-deep group-hover:bg-k5-digital group-hover:text-white'}`}>{res.icon}</div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-base font-bold text-gray-900 dark:text-white truncate">{res.title}</p>
-                                                    {res.subtitle && <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-blue-500/70">{res.subtitle}</p>}
+                                                    <p className="text-lg font-bold text-k5-black dark:text-white truncate tracking-tight">{res.title}</p>
+                                                    {res.subtitle && <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5 group-hover:text-k5-digital">{res.subtitle}</p>}
                                                 </div>
-                                                <div className="opacity-0 group-hover:opacity-100 transition-all flex items-center gap-3 pr-2"><span className="text-[10px] font-black text-gray-300 uppercase tracking-widest italic">Öffnen</span><ArrowRight size={18} className="text-blue-600 -translate-x-4 group-hover:translate-x-0 transition-all" /></div>
+                                                <div className="opacity-0 group-hover:opacity-100 transition-all flex items-center gap-4 pr-3">
+                                                    <span className="text-[10px] font-bold text-k5-digital uppercase tracking-widest">Öffnen</span>
+                                                    <ArrowRight size={18} className="text-k5-digital -translate-x-4 group-hover:translate-x-0 transition-all" />
+                                                </div>
                                             </button>
                                         ))}
                                     </div>
@@ -104,38 +115,39 @@ export default function WikiSearch({ handleNav, isMobile, closeMobileMenu }) {
                             })}
                         </div>
                     ) : (
-                        <div className="py-20 text-center space-y-3">
-                            <div className="inline-block p-4 bg-gray-50 dark:bg-gray-800/50 rounded-full mb-2 text-gray-200 dark:text-gray-700"><Search size={32} /></div>
-                            <p className="text-[11px] font-black text-gray-300 dark:text-gray-600 uppercase tracking-[0.5em]">{query ? "Keine Treffer" : "Warte auf K5 Command..."}</p>
+                        <div className="py-24 text-center space-y-4">
+                            <div className="inline-block p-6 bg-k5-light-grey dark:bg-k5-deep/20 rounded-full mb-2 text-gray-200 dark:text-k5-deep/50"><Search size={40} /></div>
+                            <p className="text-[11px] font-bold text-k5-sand uppercase tracking-[0.5em]">{query ? "Keine Treffer" : "Warte auf K5 Command..."}</p>
                         </div>
                     )}
                 </div>
-                <div className="px-6 py-4 bg-gray-50/50 dark:bg-gray-800/30 border-t border-gray-50 dark:border-gray-800 flex justify-between items-center shrink-0">
-                    <div className="flex items-center gap-3">
-                        <kbd className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[9px] font-bold text-gray-400">ESC</kbd>
+
+                <div className="px-8 py-5 bg-k5-light-grey/30 dark:bg-k5-deep/20 border-t border-gray-100 dark:border-k5-deep flex justify-between items-center shrink-0">
+                    <div className="flex items-center gap-4">
+                        <div className="flex gap-1">
+                            <kbd className="px-2 py-1 bg-white dark:bg-k5-deep border border-gray-200 dark:border-k5-deep rounded text-[10px] font-bold text-gray-400">ESC</kbd>
+                        </div>
                         <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">schließen</span>
                     </div>
-                    <span className="text-[9px] font-black text-blue-600/40 uppercase tracking-widest italic text-right">K5 Handbook OS</span>
+                    <span className="text-[9px] font-bold text-k5-digital/60 uppercase tracking-widest">K5 Handbook OS v1.2</span>
                 </div>
             </div>
         </>
     );
 
     return (
-        <div className="relative px-2 mb-6" ref={searchRef}>
-            {/* TRIGGER BUTTON (BLEIBT IN DER SIDEBAR) */}
+        <div className="relative px-1 mb-8" ref={searchRef}>
             <button 
                 onClick={() => setIsOpen(true)}
-                className="w-full flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl text-gray-400 hover:border-blue-500 hover:shadow-lg transition-all group shadow-sm"
+                className="w-full flex items-center gap-4 px-5 py-4 bg-k5-light-grey/50 dark:bg-k5-deep/20 border border-gray-100 dark:border-k5-deep/50 rounded-k5-md text-gray-400 hover:border-k5-digital hover:shadow-xl hover:shadow-k5-digital/10 transition-all group shadow-sm"
             >
-                <Search size={18} className="group-hover:text-blue-500" />
-                <span className="text-sm font-bold tracking-tight text-left">Suche...</span>
-                <div className="hidden lg:flex items-center gap-1 ml-auto bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-md">
-                    <Command size={10} /> <span className="text-[10px] font-black uppercase">K</span>
+                <Search size={18} className="group-hover:text-k5-digital transition-colors" />
+                <span className="text-[13px] font-bold tracking-tight text-left uppercase">Suchen</span>
+                <div className="hidden lg:flex items-center gap-1.5 ml-auto bg-white dark:bg-k5-deep px-2 py-1 rounded-md border border-gray-100 dark:border-k5-deep">
+                    <Command size={10} className="text-gray-400" /> <span className="text-[10px] font-bold text-gray-400">K</span>
                 </div>
             </button>
 
-            {/* PORTAL: Rendert das Overlay außerhalb der Sidebar Hierarchie */}
             {isOpen && createPortal(SearchOverlay, document.body)}
         </div>
     );

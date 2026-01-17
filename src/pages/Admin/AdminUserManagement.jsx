@@ -48,7 +48,6 @@ export default function AdminUserManagement({ currentUser }) {
         } catch (error) { addToast("Fehler beim Speichern", "error"); }
     };
 
-    // Gefilterte und alphabetisch sortierte User-Liste
     const filteredUsers = useMemo(() => {
         return users
             .filter(u => 
@@ -63,29 +62,34 @@ export default function AdminUserManagement({ currentUser }) {
             });
     }, [users, searchTerm]);
 
-    if (loading) return <div className="p-8 text-center text-gray-400 font-sans italic uppercase tracking-widest font-black">Lade Benutzerdaten...</div>;
+    if (loading) return (
+        <div className="p-20 text-center text-k5-sand font-bold uppercase tracking-[0.4em] animate-pulse">
+            Lade Benutzerdaten...
+        </div>
+    );
 
     return (
-        <div className="space-y-6 font-sans">
-            {/* Dein Header mit Statistiken und Search-Input */}
+        <div className="space-y-8 font-sans">
+            {/* Statistiken & Search */}
             <UserManagementHeader 
                 userCount={users.length} 
                 searchTerm={searchTerm} 
                 setSearchTerm={setSearchTerm} 
             />
 
-            <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden transition-all">
+            {/* Table Container: rounded-k5-lg */}
+            <div className="bg-white dark:bg-k5-black rounded-k5-lg border border-gray-100 dark:border-k5-deep shadow-sm overflow-hidden transition-all">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-800">
+                    <table className="w-full text-left text-sm border-collapse">
+                        <thead className="bg-k5-light-grey/50 dark:bg-k5-deep/20 border-b border-gray-100 dark:border-k5-deep">
                             <tr>
-                                <th className="px-8 py-5 font-black text-gray-400 uppercase tracking-[0.2em] text-[10px] italic">Mitarbeiter</th>
-                                <th className="px-8 py-5 font-black text-gray-400 uppercase tracking-[0.2em] text-[10px] italic">Rolle</th>
-                                <th className="px-8 py-5 font-black text-gray-400 uppercase tracking-[0.2em] text-[10px] italic">Urlaub</th>
-                                <th className="px-8 py-5 font-black text-gray-400 uppercase tracking-[0.2em] text-[10px] text-right italic">Aktionen</th>
+                                <th className="px-10 py-6 font-bold text-gray-400 uppercase tracking-[0.25em] text-[10px]">Mitarbeiter</th>
+                                <th className="px-10 py-6 font-bold text-gray-400 uppercase tracking-[0.25em] text-[10px]">Rolle</th>
+                                <th className="px-10 py-6 font-bold text-gray-400 uppercase tracking-[0.25em] text-[10px]">Urlaubsanspruch</th>
+                                <th className="px-10 py-6 font-bold text-gray-400 uppercase tracking-[0.25em] text-[10px] text-right">Aktionen</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
+                        <tbody className="divide-y divide-gray-50 dark:divide-k5-deep/30">
                             {filteredUsers.map(user => (
                                 <UserManagementRow 
                                     key={user.uid}
@@ -109,8 +113,8 @@ export default function AdminUserManagement({ currentUser }) {
             </div>
             
             {filteredUsers.length === 0 && (
-                <div className="py-20 text-center">
-                    <p className="text-gray-400 font-black italic uppercase tracking-widest text-sm">Keine Mitglieder gefunden</p>
+                <div className="py-24 text-center bg-k5-light-grey/20 dark:bg-k5-deep/10 rounded-k5-lg border-2 border-dashed border-gray-100 dark:border-k5-deep">
+                    <p className="text-k5-sand font-bold uppercase tracking-[0.3em] text-[10px]">Keine Mitglieder gefunden</p>
                 </div>
             )}
         </div>

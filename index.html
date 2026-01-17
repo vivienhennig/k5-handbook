@@ -8,28 +8,73 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script>
       tailwind.config = {
-        darkMode: 'class', // Wichtig, damit dein Dark-Mode-Toggle funktioniert
+        darkMode: 'class',
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
+              sans: ['Aeonik', 'Inter', 'sans-serif'],
             },
             colors: {
-              // Hier könnten wir deine K5 Farben fest definieren, 
-              // aber deine 'hex' Werte im Code funktionieren auch so.
+              'k5-deep': '#052364',
+              'k5-digital': '#092AFF',
+              'k5-heritage': '#00a5e5',
+              'k5-black': '#000000',
+              'k5-sand': '#C5B8AE',
+              'k5-lime': '#E9FF86',
+              'k5-lime-light': '#F3FCCF',
+              'k5-light-grey': '#F5F5F5',
+            },
+            backgroundImage: {
+              'glow-deep': 'linear-gradient(135deg, #052364 0%, #092AFF 100%)',
+              'glow-digital': 'linear-gradient(135deg, #092AFF 0%, #00a5e5 100%)',
+            },
+            borderRadius: {
+              'k5-sm': '5px',
+              'k5-md': '24px',
+              'k5-lg': '40px',
+              'k5-xl': '75px',
+            },
+            lineHeight: {
+              'copy': '1.3',
             }
           }
         }
       }
     </script>
+    <style>
+      @font-face {
+        font-family: 'Aeonik';
+        src: url('/fonts/Aeonik-Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'Aeonik';
+        src: url('/fonts/Aeonik-Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+      }
+      
+      body {
+        font-family: 'Aeonik', 'Inter', sans-serif;
+        line-height: 1.3;
+      }
+
+      /* CTA Definition */
+      .k5-cta {
+        font-family: 'Aeonik', sans-serif;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+    </style>
   </head>
-  <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <body class="bg-k5-light-grey dark:bg-k5-black text-k5-black dark:text-white transition-colors duration-200">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

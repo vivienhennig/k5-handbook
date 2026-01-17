@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquare, Users, Shield, Tag } from 'lucide-react'; // Tag Icon hinzugefügt
+import { MessageSquare, Users, Shield, Tag, Sparkles } from 'lucide-react';
 import AdminUserManagement from './AdminUserManagement.jsx'; 
 import FeedbackInbox from './FeedbackInbox.jsx';
 import AdminTicketEditor from '../../components/Admin/AdminTicketEditor.jsx';
@@ -24,40 +24,43 @@ export default function AdminDashboard({ feedbackList = [], onRefreshFeedback, c
     };
 
     return (
-        <div className="max-w-7xl mx-auto animate-in fade-in duration-500 pb-20 px-4 font-sans">
-            {/* Header Area */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-gray-100 dark:border-gray-800 pb-8 gap-6">
+        <div className="max-w-7xl mx-auto animate-in fade-in duration-500 pb-32 px-4 font-sans">
+            {/* Header Area: Aeonik Black, Italic entfernt */}
+            <div className="flex flex-col lg:flex-row justify-between items-center lg:items-end mb-16 border-b border-gray-100 dark:border-k5-deep pb-12 gap-8 text-center lg:text-left">
                 <div>
-                    <h2 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white flex items-center gap-4 italic tracking-tight uppercase">
-                        <Shield className="text-red-600" size={40}/> Admin <span className="text-blue-600">Console</span>
+                    <h2 className="text-5xl lg:text-6xl font-black text-k5-black dark:text-white flex items-center justify-center lg:justify-start gap-5 tracking-tighter uppercase leading-none">
+                        <Shield className="text-k5-digital" size={48}/> Admin <span className="text-k5-digital">Console</span>
                     </h2>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2 font-bold uppercase text-xs tracking-widest italic">Systemstatus & Feedback Zentrale</p>
+                    <div className="flex items-center gap-3 justify-center lg:justify-start mt-4">
+                        <Sparkles size={14} className="text-k5-sand" />
+                        <p className="text-k5-sand dark:text-k5-sand/80 font-bold uppercase text-[11px] tracking-[0.4em]">Systemstatus & Feedback Zentrale</p>
+                    </div>
                 </div>
 
-                {/* Tab Switcher - Jetzt mit 3 Optionen */}
-                <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
+                {/* Tab Switcher: Aeonik Bold, rounded-k5-md */}
+                <div className="bg-k5-light-grey dark:bg-k5-deep/30 p-2 rounded-k5-md flex items-center gap-2 shadow-inner border border-gray-100 dark:border-k5-deep/50">
                     {[
                         { id: 'feedback', icon: MessageSquare, label: 'Feedback' },
                         { id: 'users', icon: Users, label: 'Users' },
-                        { id: 'tickets', icon: Tag, label: 'Tickets' } // Neuer Tab
+                        { id: 'tickets', icon: Tag, label: 'Tickets' }
                     ].map(tab => (
                         <button 
                             key={tab.id}
                             onClick={() => setActiveSubTab(tab.id)}
-                            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all ${
+                            className={`px-8 py-3.5 rounded-k5-md text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-3 transition-all active:scale-95 ${
                                 activeSubTab === tab.id 
-                                ? 'bg-white dark:bg-gray-700 shadow-lg text-blue-600' 
-                                : 'text-gray-400 hover:text-gray-600'
+                                ? 'bg-glow-digital text-white shadow-xl shadow-k5-digital/25' 
+                                : 'text-k5-sand hover:text-k5-black dark:hover:text-white'
                             }`}
                         >
-                            <tab.icon size={14}/> {tab.label}
+                            <tab.icon size={16}/> {tab.label}
                         </button>
                     ))}
                 </div>
             </div>
 
-            {/* Content Area */}
-            <div className="min-h-[500px]">
+            {/* Content Area: k5-lg Rundung für die inneren Views falls nötig */}
+            <div className="min-h-[600px] animate-in slide-in-from-bottom-4 duration-500">
                 {activeSubTab === 'feedback' && (
                     <FeedbackInbox 
                         feedbackList={feedbackList} 

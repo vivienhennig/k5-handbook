@@ -2,18 +2,18 @@ import React from 'react';
 
 export default function VacationStats({ stats }) {
     return (
-        <div className="flex gap-2">
-            <div className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 text-center min-w-[80px]">
-                <div className="text-xs text-gray-400 uppercase font-bold tracking-tighter">Genommen</div>
-                <div className="text-xl font-black text-gray-900 dark:text-white">{stats.taken}</div>
+        <div className="flex gap-3">
+            <div className="bg-white dark:bg-k5-black p-4 rounded-k5-md border border-gray-100 dark:border-k5-deep text-center min-w-[100px]">
+                <div className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">Genommen</div>
+                <div className="text-2xl font-bold text-k5-black dark:text-white leading-none">{stats.taken}</div>
             </div>
-            <div className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 text-center min-w-[80px]">
-                <div className="text-xs text-gray-400 uppercase font-bold tracking-tighter">Geplant</div>
-                <div className="text-xl font-black text-blue-600 dark:text-blue-400">{stats.planned}</div>
+            <div className="bg-white dark:bg-k5-black p-4 rounded-k5-md border border-gray-100 dark:border-k5-deep text-center min-w-[100px]">
+                <div className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">Geplant</div>
+                <div className="text-2xl font-bold text-k5-digital leading-none">{stats.planned}</div>
             </div>
-            <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-xl border border-green-100 dark:border-green-800 text-center min-w-[80px]">
-                <div className="text-xs text-green-600 dark:text-green-400 uppercase font-bold tracking-tighter">Übrig</div>
-                <div className="text-xl font-black text-green-700 dark:text-green-300">{stats.remaining}</div>
+            <div className="bg-k5-lime-light dark:bg-k5-lime/10 p-4 rounded-k5-md border border-k5-lime/30 text-center min-w-[100px]">
+                <div className="text-[10px] text-k5-deep dark:text-k5-lime uppercase font-bold tracking-widest mb-1">Übrig</div>
+                <div className="text-2xl font-bold text-k5-deep dark:text-k5-lime leading-none">{stats.remaining}</div>
             </div>
         </div>
     );

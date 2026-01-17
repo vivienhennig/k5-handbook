@@ -43,40 +43,35 @@ export default function MainContent({
         const loadDashboardData = async () => {
             try {
                 const users = await userApi.getAllUsers();
-            const today = new Date();
-            today.setHours(0, 0, 0, 0); // Zeit auf Mitternacht setzen für exakten Vergleich
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
 
-            const upcoming = users.filter(u => {
-                if (!u.birthDate) return false;
+                const upcoming = users.filter(u => {
+                    if (!u.birthDate) return false;
 
-                // FIX: Falls das Format DD.MM.YYYY ist, wandeln wir es um
-                let dateStr = u.birthDate;
-                if (dateStr.includes('.')) {
-                    const [day, month, year] = dateStr.split('.');
-                    dateStr = `${year}-${month}-${day}`;
-                }
+                    let dateStr = u.birthDate;
+                    if (dateStr.includes('.')) {
+                        const [day, month, year] = dateStr.split('.');
+                        dateStr = `${year}-${month}-${day}`;
+                    }
 
-                const bDay = new Date(dateStr);
-                if (isNaN(bDay)) return false; // Ungültiges Datum ignorieren
+                    const bDay = new Date(dateStr);
+                    if (isNaN(bDay)) return false;
 
-                let next = new Date(today.getFullYear(), bDay.getMonth(), bDay.getDate());
-            
-                // Wenn der Geburtstag dieses Jahr schon war, nimm das nächste Jahr
-                if (next < today) {
-                    next.setFullYear(today.getFullYear() + 1);
-            }
+                    let next = new Date(today.getFullYear(), bDay.getMonth(), bDay.getDate());
+                
+                    if (next < today) {
+                        next.setFullYear(today.getFullYear() + 1);
+                    }
 
-                // Wir speichern das berechnete Datum für den Vergleich
-                u.nextBirthday = next;
-            // Prüfen, ob der Geburtstag heute oder in den nächsten 14 Tagen ist
-            const diffTime = next - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            // 0 bedeutet heute
-            return diffDays >= 0 && diffDays <= 14;
-        }).sort((a, b) => a.nextBirthday - b.nextBirthday);
-        
-        setBirthdayKids(upcoming);
+                    u.nextBirthday = next;
+                    const diffTime = next - today;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    return diffDays >= 0 && diffDays <= 14;
+                }).sort((a, b) => a.nextBirthday - b.nextBirthday);
+                
+                setBirthdayKids(upcoming);
 
                 const [navData, latestActions] = await Promise.all([
                     contentApi.getGuideline('settings_navigation'),
@@ -110,27 +105,26 @@ export default function MainContent({
         return new Date(timestamp).toLocaleDateString();
     };
 
-    // Navigation innerhalb des Contents (z.B. Activity Feed)
     const handleInternalNav = (id) => navigate(`/wiki/${id}`);
 
     if (activeTab === 'home') {
         return (
             <div className="animate-in fade-in duration-500 font-sans max-w-7xl mx-auto px-4">
                 <BirthdaySurprise birthdayKids={birthdayKids} />
-                <div className="mb-10">
+                <div className="mb-12">
                     <EnergyHeader user={user} />
                 </div>
-                <div className="grid grid-cols-1 gap-10 mb-10">
+                <div className="grid grid-cols-1 gap-12 mb-12">
                     <TicketStatsCard />
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-12">
                     <BirthdayCard birthdayKids={birthdayKids} />
                     <EventGrid upcomingEvents={upcomingEvents} onSelectEvent={setSelectedEvent} eventTypes={EVENT_TYPES} />
                 </div>
-                <div className="grid grid-cols-1 gap-10 mb-10">
+                <div className="grid grid-cols-1 gap-12 mb-12">
                     <TicketPriceCard />
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     <ActivityFeed activities={activities} handleNav={handleInternalNav} getTimeAgo={getTimeAgo} />
                 </div>
                 {selectedEvent && (
@@ -141,7 +135,6 @@ export default function MainContent({
         );
     }
 
-
     if (activeTab === 'calendar') return <CalendarView currentUser={user} />;
     if (activeTab === 'vacation') return <VacationView currentUser={user} />;
     if (activeTab === 'team')     return <TeamView />;
@@ -149,8 +142,8 @@ export default function MainContent({
     if (activeTab === 'admin')    return <AdminDashboard feedbackList={adminFeedbackList} onRefreshFeedback={onRefreshFeedback} currentUser={user} />;
     if (activeTab === 'resources') return <ResourceView />;
     if (activeTab === 'automation') return <AutomationView />;
-    if (activeTab === 'qrcode') return <QRCodeView />;
-    if (activeTab === 'location') return <LocationView />;
+    if (activeTab === 'qrcode') return <QRCodeView handleNav={handleInternalNav} />;
+    if (activeTab === 'location') return <LocationView handleNav={handleInternalNav} />;
 
     const currentWiki = customWikis.find(w => w.id === activeTab);
     if (currentWiki) {
@@ -167,5 +160,16 @@ export default function MainContent({
         );
     }
 
-    return <div className="p-20 text-center text-gray-400 uppercase font-black italic tracking-widest">Seite nicht gefunden</div>;
+    return (
+        <div className="p-32 text-center bg-white dark:bg-k5-black rounded-k5-lg border border-gray-100 dark:border-k5-deep mt-10">
+            <p className="text-k5-sand font-bold uppercase tracking-[0.3em] text-sm">Error 404</p>
+            <h2 className="text-3xl font-bold text-k5-black dark:text-white uppercase tracking-tight mt-4">Seite nicht gefunden</h2>
+            <button 
+                onClick={() => navigate('/home')}
+                className="mt-8 px-8 py-3 bg-glow-digital text-white font-bold rounded-k5-md uppercase tracking-widest text-xs"
+            >
+                Zurück zum Dashboard
+            </button>
+        </div>
+    );
 }

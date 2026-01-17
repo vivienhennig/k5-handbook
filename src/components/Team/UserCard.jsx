@@ -5,64 +5,65 @@ export default function UserCard({ user, deptStyle }) {
     const [imgError, setImgError] = useState(false);
 
     return (
-        <div className="group bg-white dark:bg-gray-800 rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full font-sans">
+        <div className="group bg-white dark:bg-k5-black rounded-k5-lg overflow-hidden border border-gray-100 dark:border-k5-deep shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full font-sans">
             {/* Color Banner */}
-            <div className={`h-2 w-full ${deptStyle.classes.split(' ')[0]}`}></div>
+            <div className={`h-1.5 w-full ${deptStyle.classes.split(' ')[0]}`}></div>
             
-            <div className="p-6 flex flex-col flex-1 relative">
-                <div className="absolute top-4 right-4">
-                     <span className={`text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${deptStyle.classes}`}>
-                        {user.department || 'Team'}
-                     </span>
-                </div>
-
-                <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xl font-black text-gray-400 overflow-hidden border-2 border-white dark:border-gray-600 shadow-md group-hover:scale-110 transition-transform duration-300 shrink-0">
+            <div className="p-6 lg:p-8 flex flex-col flex-1">
+                {/* Avatar & Department Badge */}
+                <div className="flex justify-between items-start mb-6">
+                    <div className="w-16 h-16 rounded-k5-md bg-k5-light-grey dark:bg-k5-deep flex items-center justify-center text-xl font-black text-gray-400 overflow-hidden border-2 border-white dark:border-k5-deep shadow-sm group-hover:scale-105 transition-transform duration-300 shrink-0">
                         {user.photoUrl && !imgError ? (
                             <img src={user.photoUrl} alt={user.displayName} onError={() => setImgError(true)} className="w-full h-full object-cover" />
                         ) : (
-                            <span className="italic uppercase">{user.displayName?.charAt(0) || '?'}</span>
+                            <span className="uppercase">{user.displayName?.charAt(0) || '?'}</span>
                         )}
                     </div>
-                    <div className="min-w-0 flex-1"> {/* flex-1 hilft beim Platzmanagement */}
-                        <h3 className="font-black text-base text-gray-900 dark:text-white leading-tight italic uppercase tracking-tight mb-0.5">
-                            {user.displayName}
-                        </h3>
-                        <p className="text-[10px] font-bold text-gray-400 flex items-start gap-1 uppercase tracking-tighter leading-snug">
-                            <Briefcase size={12} className="shrink-0 mt-0.5"/> 
-                            <span className="break-words"> {/* break-words erlaubt den Umbruch */}
-                                {user.position || 'K5 Member'}
-                            </span>
-                        </p>
-                    </div>
+                    <span className={`text-[8px] font-bold px-2 py-1 rounded-k5-sm uppercase tracking-[0.2em] mt-1 ${deptStyle.classes}`}>
+                        {user.department || 'Team'}
+                    </span>
                 </div>
 
+                {/* Name & Position - Vertikal gestapelt gegen Abschneiden */}
+                <div className="mb-6">
+                    <h3 className="font-bold text-lg text-k5-black dark:text-white leading-tight uppercase tracking-tight mb-2">
+                        {user.displayName}
+                    </h3>
+                    <p className="text-[10px] font-bold text-k5-sand flex items-center gap-1.5 uppercase tracking-widest">
+                        <Briefcase size={12} className="shrink-0 text-k5-digital"/> 
+                        <span>{user.position || 'K5 Member'}</span>
+                    </p>
+                </div>
+
+                {/* Focus Area */}
                 <div className="flex-1">
                     {user.responsibilities ? (
-                        <div className="space-y-2">
-                            <p className="text-[9px] font-black uppercase text-blue-600/50 flex items-center gap-1 italic tracking-widest">
-                                <Award size={10}/> Focus Area
+                        <div className="space-y-3">
+                            <p className="text-[9px] font-bold uppercase text-k5-digital flex items-center gap-2 tracking-[0.2em]">
+                                <Award size={12}/> Focus Area
                             </p>
-                            <div className="flex flex-wrap gap-1.5">
-                                {user.responsibilities.split(',').map((tag, i) => (
-                                    <span key={i} className="bg-gray-50 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 px-2 py-1 rounded-lg text-[10px] font-bold border border-gray-100 dark:border-gray-800">
+                            <div className="flex flex-wrap gap-2">
+                                {user.responsibilities.split(',').slice(0, 3).map((tag, i) => (
+                                    <span key={i} className="bg-k5-light-grey dark:bg-k5-deep/40 text-gray-600 dark:text-gray-400 px-2.5 py-1 rounded-k5-sm text-[9px] font-bold border border-gray-100 dark:border-k5-deep/50">
                                         {tag.trim()}
                                     </span>
                                 ))}
                             </div>
                         </div>
                     ) : (
-                        <p className="text-[10px] text-gray-300 italic">Keine Aufgaben hinterlegt.</p>
+                        <p className="text-[10px] text-gray-400 font-normal">Keine Aufgaben hinterlegt.</p>
                     )}
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-gray-50 dark:border-gray-800 flex items-center justify-between">
+                {/* Footer Action */}
+                <div className="mt-6 pt-6 border-t border-gray-50 dark:border-k5-deep/30 flex items-center justify-between">
                     <button 
                         onClick={() => window.location.href=`mailto:${user.email}`}
-                        className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-blue-600 transition-colors flex items-center gap-2 italic"
+                        className="text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-k5-digital transition-all flex items-center gap-2"
                     >
-                        <Mail size={12}/> Write Mail
+                        <Mail size={14}/> Write Mail
                     </button>
+                    <div className="w-1.5 h-1.5 rounded-full bg-k5-digital/20"></div>
                 </div>
             </div>
         </div>

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { contentApi } from '../../services/api.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { useReactToPrint } from 'react-to-print';
-import { Clock, LayoutGrid } from 'lucide-react';
+import { Clock, LayoutGrid, Sparkles, Plus } from 'lucide-react';
 
 // Blocks
 import TextBlock from './WikiBlocks/TextBlock.jsx';
@@ -38,7 +38,6 @@ export default function UniversalWikiView({ currentUser, wikiId, title, icon: Ic
 
     const isPrivileged = currentUser?.role === 'admin' || currentUser?.role === 'editor' || currentUser?.role === 'privileged';
 
-    // 1. DATEN LADEN
     useEffect(() => {
         const loadContent = async () => {
             setLoading(true);
@@ -58,7 +57,6 @@ export default function UniversalWikiView({ currentUser, wikiId, title, icon: Ic
         loadContent();
     }, [wikiId]);
 
-    // --- GALERIE LOGIK ---
     const galleryImages = useMemo(() => {
         const urls = [];
         content.blocks.forEach(block => {
@@ -94,7 +92,7 @@ export default function UniversalWikiView({ currentUser, wikiId, title, icon: Ic
             await contentApi.updateGuideline(`wiki_${wikiId}`, updatedContent);
             await contentApi.logActivity(wikiId, title, currentUser, 'update');
             setIsEditing(false);
-            addToast("Gespeichert! 🚀");
+            addToast("Änderungen im Handbook gesichert! 🚀");
         } catch (e) { addToast("Fehler beim Speichern", "error"); }
     };
 
@@ -108,11 +106,11 @@ export default function UniversalWikiView({ currentUser, wikiId, title, icon: Ic
     const addBlock = (type) => {
         const base = { id: Date.now().toString(), type, width: '4/4', style: 'card' };
         let newContent = "";
-        if (type === 'headline') newContent = { text: "Titel", level: 2 };
+        if (type === 'headline') newContent = { text: "Neuer Titel", level: 2 };
         if (type === 'image') newContent = { urls: [""], layout: 'single' };
-        if (type === 'table') newContent = { rows: [{ cells: ["H1", "H2"] }, { cells: ["", ""] }] };
-        if (type === 'checklist') newContent = [{ id: Date.now(), text: "Neu", checked: false }];
-        if (type === 'color') newContent = { hex: "#3b82f6", label: "Farbe" };
+        if (type === 'table') newContent = { rows: [{ cells: ["Spalte 1", "Spalte 2"] }, { cells: ["", ""] }] };
+        if (type === 'checklist') newContent = [{ id: Date.now(), text: "Neue Aufgabe", checked: false }];
+        if (type === 'color') newContent = { hex: "#2563EB", label: "Digital Blue" };
         setContent(prev => ({ ...prev, blocks: [...prev.blocks, { ...base, content: newContent }] }));
     };
 
@@ -133,7 +131,7 @@ export default function UniversalWikiView({ currentUser, wikiId, title, icon: Ic
         const newBlocks = [...content.blocks];
         newBlocks.splice(index + 1, 0, newBlock);
         setContent(prev => ({ ...prev, blocks: newBlocks }));
-        addToast("Dupliziert! 📋");
+        addToast("Block dupliziert 📋");
     };
 
     const renderLinkedText = (text, customWikis) => {
@@ -145,7 +143,7 @@ export default function UniversalWikiView({ currentUser, wikiId, title, icon: Ic
                 const targetWiki = customWikis?.find(w => w.title.toLowerCase() === cleanName.toLowerCase());
                 if (targetWiki) {
                     return (
-                        <Link key={i} to={`/wiki/${targetWiki.id}`} className="text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-400/10 px-1.5 py-0.5 rounded-md font-bold hover:underline transition-all">
+                        <Link key={i} to={`/wiki/${targetWiki.id}`} className="text-k5-digital dark:text-k5-digital bg-k5-digital/10 px-2 py-0.5 rounded-k5-sm font-bold hover:bg-k5-digital hover:text-white transition-all">
                             {part}
                         </Link>
                     );
@@ -158,7 +156,7 @@ export default function UniversalWikiView({ currentUser, wikiId, title, icon: Ic
     if (loading) return <WikiSkeleton />;
 
     return (
-        <div className="max-w-7xl mx-auto pb-32 px-4 font-sans flex flex-col lg:flex-row gap-10">
+        <div className="max-w-7xl mx-auto pb-32 px-4 font-sans flex flex-col lg:flex-row gap-12 relative">
             <WikiLightbox 
                 activeLightbox={activeLightbox} 
                 galleryImages={galleryImages} 
@@ -169,7 +167,7 @@ export default function UniversalWikiView({ currentUser, wikiId, title, icon: Ic
             
             <WikiTableOfContents blocks={content.blocks} isEditing={isEditing} />
 
-            <div className="flex-1 min-w-0 order-1">
+            <div className="flex-1 min-w-0 order-1 animate-in fade-in duration-700">
                 <WikiHeader 
                     title={title} wikiId={wikiId} icon={Icon} isEditing={isEditing} 
                     isPrivileged={isPrivileged} introText={content.introText}
@@ -178,11 +176,11 @@ export default function UniversalWikiView({ currentUser, wikiId, title, icon: Ic
                     onDelete={() => {}} onPrint={handlePrint}
                 />
 
-                <div ref={componentRef} className="flex flex-wrap gap-6 items-stretch">
+                <div ref={componentRef} className="flex flex-wrap gap-8 items-stretch mt-12">
                     {content.blocks.map((block) => {
-                        const widthClass = block.width === '1/4' ? 'w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)]' :
-                                           block.width === '2/4' ? 'w-full lg:w-[calc(50%-12px)]' :
-                                           block.width === '3/4' ? 'w-full lg:w-[calc(75%-6px)]' : 'w-full';
+                        const widthClass = block.width === '1/4' ? 'w-full sm:w-[calc(50%-16px)] lg:w-[calc(25%-24px)]' :
+                                           block.width === '2/4' ? 'w-full lg:w-[calc(50%-16px)]' :
+                                           block.width === '3/4' ? 'w-full lg:w-[calc(75%-8px)]' : 'w-full';
 
                         return (
                             <div key={block.id} className={`group relative transition-all duration-300 flex flex-col ${widthClass}`}>
@@ -195,34 +193,53 @@ export default function UniversalWikiView({ currentUser, wikiId, title, icon: Ic
                                     />
                                 )}
 
-                                {block.type === 'headline' && <HeadlineBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}
-                                {block.type === 'text' && <TextBlock content={block.content} isEditing={isEditing} renderLinkedText={(t) => renderLinkedText(t, customWikis || [])} onChange={(v) => updateBlock(block.id, 'content', v)} customWikis={customWikis || []} />}
-                                {block.type === 'image' && <ImageBlock content={block.content} isEditing={isEditing} onLightbox={setActiveLightbox} onChange={(v) => updateBlock(block.id, 'content', v)} />}
-                                {block.type === 'video' && <VideoBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}
-                                {block.type === 'table' && <TableBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}
-                                {block.type === 'checklist' && <ChecklistBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} renderLinkedText={(t) => renderLinkedText(t, customWikis || [])} customWikis={customWikis} />}
-                                {block.type === 'alert' && <AlertBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}
-                                {block.type === 'file' && <FileBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}
-                                {block.type === 'color' && <ColorBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}
-                                {block.type === 'divider' && <DividerBlock />}
+                                <div className={`${isEditing ? 'ring-2 ring-transparent hover:ring-k5-digital/20 rounded-k5-md p-4 transition-all' : ''}`}>
+                                    {block.type === 'headline' && <HeadlineBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}
+                                    {block.type === 'text' && <TextBlock content={block.content} isEditing={isEditing} renderLinkedText={(t) => renderLinkedText(t, customWikis || [])} onChange={(v) => updateBlock(block.id, 'content', v)} customWikis={customWikis || []} />}
+                                    {block.type === 'image' && <ImageBlock content={block.content} isEditing={isEditing} onLightbox={setActiveLightbox} onChange={(v) => updateBlock(block.id, 'content', v)} />}
+                                    {block.type === 'video' && <VideoBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}
+                                    {block.type === 'table' && <TableBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}
+                                    {block.type === 'checklist' && <ChecklistBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} renderLinkedText={(t) => renderLinkedText(t, customWikis || [])} customWikis={customWikis} />}
+                                    {block.type === 'alert' && <AlertBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}
+                                    {block.type === 'file' && <FileBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}
+                                    {block.type === 'color' && <ColorBlock content={block.content} isEditing={isEditing} onChange={(v) => updateBlock(block.id, 'content', v)} />}
+                                    {block.type === 'divider' && <DividerBlock />}
+                                </div>
                             </div>
                         );
                     })}
                 </div>
 
                 {isEditing && (
-                    <div className="mt-16 p-10 bg-gray-50 dark:bg-gray-900/50 rounded-[3rem] border-2 border-dashed border-gray-200 dark:border-gray-800 grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 gap-4">
+                    <div className="mt-20 p-10 bg-k5-light-grey/50 dark:bg-k5-deep/20 rounded-k5-lg border-2 border-dashed border-gray-100 dark:border-k5-deep grid grid-cols-2 md:grid-cols-5 gap-6">
                         {['headline', 'text', 'image', 'video', 'table', 'checklist', 'alert', 'file', 'color', 'divider'].map(type => (
-                            <button key={type} onClick={() => addBlock(type)} className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:scale-110 transition-all border-2 border-transparent">
-                                <span className="text-blue-600 uppercase font-black text-[9px]">{type}</span>
+                            <button 
+                                key={type} 
+                                onClick={() => addBlock(type)} 
+                                className="flex flex-col items-center gap-3 p-6 bg-white dark:bg-k5-black rounded-k5-md shadow-sm hover:border-k5-digital hover:scale-105 transition-all border border-transparent group"
+                            >
+                                <div className="p-3 bg-k5-light-grey dark:bg-k5-deep rounded-k5-sm text-gray-400 group-hover:text-k5-digital transition-colors">
+                                    <Plus size={18} />
+                                </div>
+                                <span className="text-k5-black dark:text-white uppercase font-bold text-[10px] tracking-widest">{type}</span>
                             </button>
                         ))}
                     </div>
                 )}
 
-                <div className="mt-24 pt-10 border-t border-gray-100 dark:border-gray-800 flex flex-wrap gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 italic">
-                    <div className="flex items-center gap-3"><Clock size={14} className="text-blue-500"/> UPDATED: {content.lastUpdated ? new Date(content.lastUpdated).toLocaleString('de-DE') : 'NEVER'}</div>
-                    <div className="flex items-center gap-3"><LayoutGrid size={14} className="text-blue-500"/> EDITOR: {content.lastEditor || 'SYSTEM'}</div>
+                <div className="mt-24 pt-10 border-t border-gray-100 dark:border-k5-deep flex flex-col md:flex-row flex-wrap gap-8 text-[11px] font-bold uppercase tracking-[0.3em] text-k5-sand">
+                    <div className="flex items-center gap-3">
+                        <Clock size={16} className="text-k5-digital"/> 
+                        <span>Updated: {content.lastUpdated ? new Date(content.lastUpdated).toLocaleString('de-DE') : 'Never'}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <LayoutGrid size={16} className="text-k5-digital"/> 
+                        <span>Editor: {content.lastEditor || 'System'}</span>
+                    </div>
+                    <div className="ml-auto flex items-center gap-2 opacity-50">
+                        <Sparkles size={14} />
+                        <span>K5 Handbook OS v1.2</span>
+                    </div>
                 </div>
             </div>
             <BackToTopButton />

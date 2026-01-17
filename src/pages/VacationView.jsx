@@ -4,7 +4,6 @@ import { STANDARD_VACATION_DAYS, DEPARTMENT_COLORS } from '../config/data.js';
 import { vacationApi, userApi, calculateWorkDays } from '../services/api.js'; 
 import { useToast } from '../context/ToastContext.jsx';
 
-// Neue Sub-Komponenten
 import VacationStats from '../components/Vacation/VacationStats.jsx';
 import VacationForm from '../components/Vacation/VacationForm.jsx';
 import TeamTimeline from '../components/Vacation/TeamTimeline.jsx';
@@ -99,29 +98,28 @@ export default function VacationView({ currentUser }) {
         } catch (e) { addToast("Fehler beim Löschen", "error"); }
     };
 
-    // Hilfsfunktionen für Timeline
     const getDepartmentColorClass = (dept) => {
         const key = Object.keys(DEPARTMENT_COLORS).find(k => dept?.includes(k)) || 'default';
         return DEPARTMENT_COLORS[key].classes;
     };
 
-    if (loading) return <div className="p-20 text-center text-gray-400 font-black animate-pulse uppercase tracking-widest">Lade Urlaubsplaner...</div>;
+    // Design-Update: Lade-State nutzt k5-sand
+    if (loading) return <div className="p-20 text-center text-k5-sand font-bold uppercase tracking-widest animate-pulse">Lade Urlaubsplaner...</div>;
 
     return (
         <div className="max-w-7xl mx-auto animate-in fade-in duration-500 pb-20 px-4 font-sans">
-            {/* Header mit Stats */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6 border-b border-gray-100 dark:border-gray-800 pb-8">
+            {/* Header: Italic entfernt, Aeonik Bold (font-bold) genutzt */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6 border-b border-gray-100 dark:border-k5-deep pb-8">
                 <div>
-                    <h2 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white flex items-center gap-4 italic tracking-tight">
-                        <Palmtree className="text-orange-500" size={40}/> Urlaubsplaner
+                    <h2 className="text-4xl lg:text-5xl font-bold text-k5-black dark:text-white flex items-center gap-4 tracking-tight uppercase">
+                        <Palmtree className="text-k5-digital" size={40}/> Urlaubsplaner
                     </h2>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2">Verwalte deine freien Tage und Workations im Team.</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2 font-normal leading-copy">Verwalte deine freien Tage und Workations im Team.</p>
                 </div>
                 <VacationStats stats={stats} />
             </div>
 
             <div className="grid lg:grid-cols-3 gap-10 mb-16">
-                {/* Formular zum Beantragen */}
                 <VacationForm 
                     newVacation={newVacation} 
                     setNewVacation={setNewVacation} 
@@ -130,7 +128,6 @@ export default function VacationView({ currentUser }) {
                     previewDays={newVacation.startDate && newVacation.endDate ? calculateWorkDays(newVacation.startDate, newVacation.endDate) : 0}
                 />
 
-                {/* Liste der eigenen Anträge */}
                 <div className="lg:col-span-2">
                     <MyVacationList 
                         vacations={vacations.filter(v => v.userId === currentUser.uid)} 
@@ -139,7 +136,7 @@ export default function VacationView({ currentUser }) {
                 </div>
             </div>
 
-            {/* Team Timeline Matrix */}
+            {/* Timeline erhält k5-lg Rundung über die Komponente */}
             <TeamTimeline 
                 viewDate={viewDate}
                 changeMonth={(delta) => {

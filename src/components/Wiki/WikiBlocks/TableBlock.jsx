@@ -1,12 +1,8 @@
 import React from 'react';
-import {  Plus, Trash2, XCircle, Check as CheckIcon} from 'lucide-react';
-
-
-// --- TABLE BLOCK ---
+import { Plus, Trash2, XCircle, Sparkles } from 'lucide-react';
 
 export default function TableBlock ({ content, isEditing, onChange }) {
-    // Falls content noch das alte Format (Array) hat oder leer ist, 
-    // konvertieren wir es hier on-the-fly in die neue Objekt-Struktur
+    // Falls content noch das alte Format (Array) hat oder leer ist, konvertieren
     const safeContent = React.useMemo(() => {
         if (!content) return { rows: [{ cells: ["Spalte 1", "Spalte 2"] }, { cells: ["", ""] }] };
         if (Array.isArray(content)) {
@@ -18,7 +14,7 @@ export default function TableBlock ({ content, isEditing, onChange }) {
     const rows = safeContent.rows || [];
 
     const updateCell = (rowIndex, colIndex, value) => {
-        const newRows = JSON.parse(JSON.stringify(rows)); // Tiefe Kopie
+        const newRows = JSON.parse(JSON.stringify(rows));
         newRows[rowIndex].cells[colIndex] = value;
         onChange({ rows: newRows });
     };
@@ -51,60 +47,67 @@ export default function TableBlock ({ content, isEditing, onChange }) {
     };
 
     return (
-        <div className="w-full space-y-4 animate-in fade-in duration-500">
-            <div className="overflow-x-auto rounded-[2rem] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900/50 shadow-sm">
+        <div className="w-full space-y-6 font-sans">
+            {/* Table Container: rounded-k5-lg */}
+            <div className="overflow-x-auto rounded-k5-lg border border-gray-100 dark:border-k5-deep bg-white dark:bg-k5-black shadow-sm transition-all duration-500 hover:shadow-xl hover:shadow-k5-digital/5">
                 <table className="w-full text-left text-sm border-collapse">
                     <thead>
-                        <tr className="bg-gray-50/50 dark:bg-gray-800/50">
+                        {/* Header: k5-light-grey / k5-deep Background */}
+                        <tr className="bg-k5-light-grey/50 dark:bg-k5-deep/30 border-b border-gray-100 dark:border-k5-deep">
                             {rows[0]?.cells.map((cell, j) => (
-                                <th key={j} className="p-4 border-b dark:border-gray-800 group/col relative">
+                                <th key={j} className="p-6 group/col relative min-w-[120px]">
                                     <div className="flex flex-col gap-1">
                                         {isEditing ? (
                                             <div className="flex items-center gap-2">
                                                 <input 
-                                                    className="bg-transparent w-full outline-none font-black uppercase text-[10px] text-blue-600 italic focus:text-blue-400" 
+                                                    className="bg-k5-digital/5 dark:bg-k5-black/40 px-2 py-1 rounded-sm border border-transparent focus:border-k5-digital/30 w-full outline-none font-bold uppercase text-[11px] text-k5-digital transition-all" 
                                                     value={cell} 
                                                     onChange={e => updateCell(0, j, e.target.value)}
                                                 />
                                                 <button 
                                                     type="button"
                                                     onClick={() => deleteColumn(j)}
-                                                    className="opacity-0 group-hover/col:opacity-100 text-red-400 hover:text-red-600 transition-all transform hover:scale-110"
+                                                    className="opacity-0 group-hover/col:opacity-100 text-red-400 hover:text-red-600 transition-all p-1"
                                                 >
                                                     <XCircle size={14}/>
                                                 </button>
                                             </div>
                                         ) : (
-                                            <span className="font-black uppercase text-[10px] text-gray-400 italic tracking-wider">{cell}</span>
+                                            <div className="flex items-center gap-2">
+                                                <Sparkles size={10} className="text-k5-sand opacity-50" />
+                                                <span className="font-black uppercase text-[10px] text-k5-sand tracking-[0.25em]">{cell}</span>
+                                            </div>
                                         )}
                                     </div>
                                 </th>
                             ))}
-                            {isEditing && <th className="w-10 border-b dark:border-gray-800"></th>}
+                            {isEditing && <th className="w-12 border-b dark:border-k5-deep bg-k5-light-grey/20 dark:bg-k5-black"></th>}
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-50 dark:divide-k5-deep/30">
                         {rows.slice(1).map((row, i) => (
-                            <tr key={i} className="hover:bg-gray-50/30 dark:hover:bg-gray-800/20 group/row transition-colors">
+                            <tr key={i} className="hover:bg-k5-light-grey/20 dark:hover:bg-k5-deep/10 group/row transition-colors">
                                 {row.cells.map((cell, j) => (
-                                    <td key={j} className="p-4 border-b border-gray-50 dark:border-gray-800 transition-all">
+                                    <td key={j} className="p-6 text-k5-black dark:text-gray-200">
                                         {isEditing ? (
                                             <input 
-                                                className="bg-transparent w-full outline-none text-gray-600 dark:text-gray-300 focus:bg-blue-50/30 rounded px-1" 
+                                                className="bg-transparent w-full outline-none font-medium text-sm focus:bg-k5-digital/5 rounded px-2 py-1 transition-all" 
                                                 value={cell} 
                                                 onChange={e => updateCell(i + 1, j, e.target.value)}
                                             />
-                                        ) : cell}
+                                        ) : (
+                                            <span className="font-medium">{cell}</span>
+                                        )}
                                     </td>
                                 ))}
                                 {isEditing && (
-                                    <td className="p-4 border-b border-gray-50 dark:border-gray-800 text-right">
+                                    <td className="p-6 text-right">
                                         <button 
                                             type="button"
                                             onClick={() => deleteRow(i + 1)}
-                                            className="opacity-0 group-hover/row:opacity-100 text-red-300 hover:text-red-500 transition-all transform hover:scale-110"
+                                            className="opacity-0 group-hover/row:opacity-100 text-gray-300 hover:text-red-500 transition-all transform hover:scale-110"
                                         >
-                                            <Trash2 size={14}/>
+                                            <Trash2 size={16}/>
                                         </button>
                                     </td>
                                 )}
@@ -114,24 +117,25 @@ export default function TableBlock ({ content, isEditing, onChange }) {
                 </table>
             </div>
             
+            {/* Buttons: rounded-k5-sm & Aeonik Bold */}
             {isEditing && (
-                <div className="flex gap-3 justify-start animate-in slide-in-from-top-2">
+                <div className="flex flex-wrap gap-4 justify-start animate-in slide-in-from-top-2">
                     <button 
                         type="button"
                         onClick={addRow}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[10px] font-black uppercase hover:bg-blue-100 transition-all active:scale-95 border border-blue-100 dark:border-blue-800"
+                        className="flex items-center gap-3 px-6 py-3 bg-k5-digital text-white rounded-k5-sm text-[10px] font-bold uppercase tracking-widest hover:bg-glow-digital shadow-lg shadow-k5-digital/20 transition-all active:scale-95"
                     >
-                        <Plus size={12}/> Zeile hinzufügen
+                        <Plus size={14}/> Zeile hinzufügen
                     </button>
                     <button 
                         type="button"
                         onClick={addColumn}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-xl text-[10px] font-black uppercase hover:bg-gray-100 transition-all active:scale-95 border border-gray-100 dark:border-gray-700"
+                        className="flex items-center gap-3 px-6 py-3 bg-k5-light-grey dark:bg-k5-deep text-k5-sand rounded-k5-sm text-[10px] font-bold uppercase tracking-widest hover:text-k5-black dark:hover:text-white border border-gray-100 dark:border-k5-deep transition-all active:scale-95"
                     >
-                        <Plus size={12}/> Spalte hinzufügen
+                        <Plus size={14}/> Spalte hinzufügen
                     </button>
                 </div>
             )}
         </div>
     );
-};
+}

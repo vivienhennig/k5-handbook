@@ -1,27 +1,56 @@
 import React from 'react';
-import { 
-    PlayCircle, FileText, AlertCircle, AlertTriangle, Maximize2, 
-    MinusCircle, ExternalLink, Plus, Trash2, XCircle, Check as CheckIcon, Copy
-} from 'lucide-react';
+import { AlertCircle, AlertTriangle, Sparkles, Info } from 'lucide-react';
 
-// --- ALERT BLOCK ---
 export default function AlertBlock({ content, isEditing, onChange }) {
+    const isWarning = content.type === 'warning';
+
     return (
-        <div className={`p-6 rounded-3xl flex gap-4 border-2 transition-all ${content.type === 'warning' ? 'bg-red-50 dark:bg-red-900/10 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/30 shadow-sm shadow-red-500/5' : 'bg-blue-50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-900/30 shadow-sm shadow-blue-500/5'}`}>
-            {content.type === 'warning' ? <AlertTriangle className="shrink-0" /> : <AlertCircle className="shrink-0" />}
-            <div className="flex-1">
+        <div className={`p-8 rounded-k5-md flex gap-6 border-2 transition-all duration-500 font-sans ${
+            isWarning 
+            ? 'bg-k5-sand/5 dark:bg-k5-sand/10 text-k5-sand border-k5-sand/20 shadow-lg shadow-k5-sand/5' 
+            : 'bg-k5-digital/5 dark:bg-k5-digital/10 text-k5-digital border-k5-digital/20 shadow-lg shadow-k5-digital/5'
+        }`}>
+            {/* Icon Column */}
+            <div className="shrink-0 mt-1">
+                {isWarning ? <AlertTriangle size={28} /> : <Info size={28} />}
+            </div>
+
+            {/* Content Column */}
+            <div className="flex-1 min-w-0">
                 {isEditing ? (
-                    <div className="space-y-2">
-                    <select className="bg-white dark:bg-gray-800 text-[10px] font-black p-1 rounded outline-none border border-current" 
-                        value={content.type} onChange={e => onChange({...content, type: e.target.value})}>
-                        <option value="info">INFO</option>
-                        <option value="warning">WARNUNG</option>
-                    </select>
-                    <input className="w-full bg-transparent border-b border-current outline-none font-bold italic" 
-                        value={content.text} onChange={e => onChange({...content, text: e.target.value})} 
-                        placeholder="Hinweistext schreiben..."/>
-                </div>
-            ) : <p className="font-bold italic leading-relaxed">{content.text}</p>}
+                    <div className="space-y-4 animate-in fade-in duration-300">
+                        <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black uppercase tracking-widest opacity-50">Type:</span>
+                            <select 
+                                className="bg-white dark:bg-k5-black text-[10px] font-bold p-2 rounded-k5-sm outline-none border border-current transition-all focus:ring-4 focus:ring-current/5" 
+                                value={content.type} 
+                                onChange={e => onChange({...content, type: e.target.value})}
+                            >
+                                <option value="info">INFO</option>
+                                <option value="warning">WARNING</option>
+                            </select>
+                        </div>
+                        <input 
+                            className="w-full bg-transparent border-b-2 border-current/20 focus:border-current outline-none font-bold text-lg py-2 transition-all placeholder:opacity-30" 
+                            value={content.text} 
+                            onChange={e => onChange({...content, text: e.target.value})} 
+                            placeholder="Hinweistext schreiben..."
+                        />
+                    </div>
+                ) : (
+                    <div className="relative">
+                        <h4 className="text-[10px] font-black uppercase tracking-[0.3em] mb-2 opacity-60">
+                            {isWarning ? 'Safety & Attention' : 'Handbook Note'}
+                        </h4>
+                        <p className="font-bold text-gray-800 dark:text-gray-100 leading-relaxed text-lg">
+                            {content.text}
+                        </p>
+                        <div className="absolute -right-2 -top-2 opacity-10">
+                            <Sparkles size={40} />
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
-    </div>
-)}
+    );
+}

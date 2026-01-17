@@ -9,55 +9,59 @@ export default function LoginForm({
     handleSubmit, setError 
 }) {
     return (
-        <div className="bg-white dark:bg-gray-900 rounded-[3rem] shadow-2xl shadow-blue-900/5 border border-gray-100 dark:border-gray-800 overflow-hidden animate-in zoom-in-95 duration-500">
-            <div className="p-10 lg:p-12">
+        <div className="bg-white dark:bg-k5-black rounded-k5-lg shadow-2xl border border-gray-100 dark:border-k5-deep overflow-hidden animate-in zoom-in-95 duration-500 font-sans">
+            <div className="p-10 lg:p-14">
                 
+                {/* Error Alert: Aeonik Bold, K5-Sand/Red Akzent */}
                 {error && (
-                    <div className="mb-8 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 text-red-700 dark:text-red-300 px-5 py-4 rounded-2xl text-xs font-bold flex items-center gap-3 animate-in shake duration-500">
-                        <AlertCircle size={18} className="shrink-0"/>
-                        <span>{error}</span>
+                    <div className="mb-10 bg-red-50 dark:bg-red-900/10 border-l-4 border-k5-sand text-red-700 dark:text-red-400 px-6 py-5 rounded-k5-md text-xs font-bold flex items-center gap-4 animate-in shake duration-500">
+                        <AlertCircle size={20} className="shrink-0"/>
+                        <span className="tracking-tight">{error}</span>
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    {/* Email Input */}
                     <div className="group">
-                        <label className="block text-[10px] font-black uppercase text-gray-400 tracking-widest mb-2 ml-2 italic">Email</label>
+                        <label className="block text-[10px] font-bold uppercase text-gray-400 tracking-[0.2em] mb-3 ml-2">Email Adresse</label>
                         <div className="relative">
-                            <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-blue-600 transition-colors" size={20}/>
+                            <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-k5-digital transition-colors" size={20}/>
                             <input 
                                 type="email" 
                                 required 
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className={`w-full pl-14 pr-6 py-5 bg-gray-50 dark:bg-gray-800/50 border-none rounded-[1.8rem] text-sm font-bold focus:ring-4 outline-none dark:text-white transition-all placeholder:text-gray-300 ${
+                                className={`w-full pl-16 pr-8 py-5 bg-k5-light-grey dark:bg-k5-deep/20 border-none rounded-k5-md text-sm font-bold focus:ring-4 outline-none dark:text-white transition-all placeholder:text-gray-300 ${
                                     email && !email.toLowerCase().endsWith('@k5-gmbh.com') 
-                                    ? 'ring-2 ring-red-500/50' 
-                                    : 'focus:ring-blue-500/5'
+                                    ? 'ring-2 ring-k5-sand/50' 
+                                    : 'focus:ring-k5-digital/5'
                                 }`}
                                 placeholder="name@k5-gmbh.com"
                             />
                         </div>
                     </div>
 
+                    {/* Passwort Input */}
                     <div className="group">
-                        <label className="block text-[10px] font-black uppercase text-gray-400 tracking-widest mb-2 ml-2 italic">Passwort</label>
+                        <label className="block text-[10px] font-bold uppercase text-gray-400 tracking-[0.2em] mb-3 ml-2">Passwort</label>
                         <div className="relative">
-                            <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-blue-600 transition-colors" size={20}/>
+                            <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-k5-digital transition-colors" size={20}/>
                             <input 
                                 type="password" 
                                 required 
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-14 pr-6 py-5 bg-gray-50 dark:bg-gray-800/50 border-none rounded-[1.8rem] text-sm font-bold focus:ring-4 focus:ring-blue-500/5 outline-none dark:text-white transition-all placeholder:text-gray-300"
+                                className="w-full pl-16 pr-8 py-5 bg-k5-light-grey dark:bg-k5-deep/20 border-none rounded-k5-md text-sm font-bold focus:ring-4 focus:ring-k5-digital/5 outline-none dark:text-white transition-all placeholder:text-gray-300"
                                 placeholder="••••••••••••"
                             />
                         </div>
                     </div>
 
+                    {/* Submit Button: Glow Digital, Aeonik Bold */}
                     <button 
                         type="submit" 
                         disabled={loading}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-[1.8rem] transition-all shadow-xl shadow-blue-500/25 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed mt-4 uppercase italic tracking-widest text-xs"
+                        className="w-full bg-glow-digital hover:opacity-90 text-white font-bold py-6 rounded-k5-md transition-all shadow-xl shadow-k5-digital/25 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed mt-4 uppercase tracking-[0.2em] text-[11px]"
                     >
                         {loading ? (
                             <Loader className="animate-spin" size={20}/>
@@ -70,13 +74,14 @@ export default function LoginForm({
                     </button>
                 </form>
 
-                <div className="mt-10 text-center border-t border-gray-50 dark:border-gray-800 pt-8">
+                {/* Switch Login/Register */}
+                <div className="mt-12 text-center border-t border-gray-100 dark:border-k5-deep/30 pt-10">
                     <button 
                         onClick={() => {
                             setIsRegistering(!isRegistering);
                             setError(null);
                         }}
-                        className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-blue-600 transition-colors italic"
+                        className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-k5-digital transition-colors"
                     >
                         {isRegistering 
                             ? 'Bereits Teil der Crew? Login' 

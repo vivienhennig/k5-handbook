@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Zap, Cpu, ChevronUp, ChevronDown, Rocket, RotateCcw, Boxes } from 'lucide-react';
+import { Check, Zap, Cpu, ChevronUp, ChevronDown, Rocket, RotateCcw, Boxes, Sparkles } from 'lucide-react';
 import { AVAILABLE_TOOLS } from '../config/data.js';
 import { CodeBlock } from '../components/UI.jsx';
 
@@ -30,45 +30,56 @@ export default function AutomationView() {
         return JSON.stringify({ nodes, connections }, null, 2);
     };
 
-    // --- UI HELPER ---
+    // --- UI HELPER (Aeonik CI Update) ---
     const StepHeading = ({ num, title, sub }) => (
-        <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-2">
-            <span className="text-[10px] font-black text-blue-600 uppercase tracking-[0.3em] italic mb-2 block">Step {num} of 5</span>
-            <h3 className="text-3xl lg:text-4xl font-black text-gray-900 dark:text-white uppercase italic tracking-tighter">{title}</h3>
-            {sub && <p className="text-gray-500 text-xs font-bold uppercase mt-2">{sub}</p>}
+        <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-2">
+            <span className="text-[10px] font-bold text-k5-digital uppercase tracking-[0.4em] mb-3 block">Step {num} of 5</span>
+            <h3 className="text-3xl lg:text-5xl font-black text-k5-black dark:text-white uppercase tracking-tighter leading-none">{title}</h3>
+            {sub && <p className="text-k5-sand text-[11px] font-bold uppercase tracking-widest mt-4">{sub}</p>}
         </div>
     );
 
     return (
-        <div className="max-w-4xl mx-auto pb-32 px-4 font-sans">
+        <div className="max-w-5xl mx-auto pb-32 px-4 font-sans">
             {/* Header */}
-            <div className="mb-12 border-b border-gray-100 dark:border-gray-800 pb-10 flex justify-between items-end">
+            <div className="mb-16 border-b border-gray-100 dark:border-k5-deep pb-10 flex flex-col md:flex-row justify-between items-center md:items-end gap-6">
                 <div>
-                    <h2 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white mb-2 tracking-tighter italic uppercase">
-                        K5 <span className="text-blue-600">Automation</span>
+                    <h2 className="text-5xl lg:text-6xl font-black text-k5-black dark:text-white mb-4 tracking-tighter uppercase leading-none">
+                        K5 <span className="text-k5-digital">Automation</span>
                     </h2>
-                    <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em] italic text-center md:text-left">Workflow Builder & API Blueprint</p>
+                    <div className="flex items-center gap-3 justify-center md:justify-start">
+                        <Sparkles size={14} className="text-k5-digital" />
+                        <p className="text-k5-sand font-bold uppercase text-[11px] tracking-[0.3em]">Workflow Builder & API Blueprint</p>
+                    </div>
                 </div>
                 {step > 1 && (
-                    <button onClick={reset} className="flex items-center gap-2 text-[10px] font-black text-gray-400 hover:text-blue-600 transition-all uppercase italic">
-                        <RotateCcw size={14} /> Reset
+                    <button onClick={reset} className="flex items-center gap-2 text-[11px] font-bold text-gray-400 hover:text-k5-digital transition-all uppercase tracking-widest">
+                        <RotateCcw size={14} /> Reset Analysis
                     </button>
                 )}
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-8 md:p-12 rounded-[3rem] border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
+            <div className="bg-white dark:bg-k5-black p-8 md:p-14 rounded-k5-lg border border-gray-100 dark:border-k5-deep shadow-sm relative overflow-hidden">
                 
                 {/* STEP 1: Häufigkeit */}
                 {step === 1 && (
                     <div className="animate-in fade-in duration-500">
                         <StepHeading num="1" title="Prozess-Frequenz" />
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {[
-                                { t: "Daily / Weekly", s: 2, c: "blue" },
-                                { t: "Monthly (Mass)", s: 2, c: "blue" },
-                                { t: "Rarely (Manual)", s: 99, c: "gray" }
+                                { t: "Daily / Weekly", s: 2, c: "digital" },
+                                { t: "Monthly (Mass)", s: 2, c: "digital" },
+                                { t: "Rarely (Manual)", s: 99, c: "sand" }
                             ].map((btn, i) => (
-                                <button key={i} onClick={() => setStep(btn.s)} className={`p-6 rounded-[2rem] border-2 font-black uppercase italic text-sm transition-all ${btn.c === 'blue' ? 'border-blue-50 text-blue-600 hover:border-blue-600 hover:bg-blue-600 hover:text-white' : 'border-gray-100 text-gray-400 hover:border-gray-300'}`}>
+                                <button 
+                                    key={i} 
+                                    onClick={() => setStep(btn.s)} 
+                                    className={`p-8 rounded-k5-md border-2 font-bold uppercase tracking-widest text-xs transition-all ${
+                                        btn.c === 'digital' 
+                                        ? 'border-k5-digital/10 text-k5-digital bg-k5-light-grey/50 dark:bg-k5-deep/20 hover:bg-glow-digital hover:text-white hover:border-transparent' 
+                                        : 'border-gray-100 dark:border-k5-deep text-gray-400 hover:border-k5-sand hover:text-k5-sand'
+                                    }`}
+                                >
                                     {btn.t}
                                 </button>
                             ))}
@@ -80,12 +91,13 @@ export default function AutomationView() {
                 {step === 2 && (
                     <div className="animate-in fade-in duration-500">
                         <StepHeading num="2" title="Logik-Check" sub="Folgt der Prozess festen Regeln?" />
-                        <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-2xl mb-8 border border-blue-100 dark:border-blue-800 italic text-sm text-blue-700 dark:text-blue-300">
-                            <strong>Beispiel für JA:</strong> "Wenn E-Mail Betreff 'Rechnung' enthält → speichere Anhang in Drive."
+                        <div className="bg-k5-light-grey dark:bg-k5-deep/30 p-8 rounded-k5-md mb-10 border border-gray-100 dark:border-k5-deep text-sm text-k5-black dark:text-gray-300">
+                            <span className="text-k5-digital font-bold uppercase tracking-widest block mb-2 text-[10px]">Beispiel für JA:</span>
+                            "Wenn E-Mail Betreff 'Rechnung' enthält → speichere Anhang in Google Drive."
                         </div>
                         <div className="flex flex-col md:flex-row gap-4 justify-center">
-                            <button onClick={() => setStep(3)} className="px-10 py-4 bg-blue-600 text-white font-black rounded-2xl uppercase italic tracking-widest shadow-lg shadow-blue-500/20 hover:scale-105 transition-all">Ja, feste Logik</button>
-                            <button onClick={() => setStep(98)} className="px-10 py-4 bg-gray-100 dark:bg-gray-700 text-gray-400 font-black rounded-2xl uppercase italic tracking-widest hover:bg-gray-200 transition-all">Nein, Bauchgefühl</button>
+                            <button onClick={() => setStep(3)} className="px-12 py-5 bg-glow-digital text-white font-bold rounded-k5-md uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-k5-digital/25 hover:scale-105 transition-all">Ja, feste Logik</button>
+                            <button onClick={() => setStep(98)} className="px-12 py-5 bg-k5-light-grey dark:bg-k5-deep/50 text-k5-sand font-bold rounded-k5-md uppercase tracking-[0.2em] text-[11px] hover:bg-gray-200 dark:hover:bg-k5-deep transition-all">Nein, Bauchgefühl</button>
                         </div>
                     </div>
                 )}
@@ -94,15 +106,23 @@ export default function AutomationView() {
                 {step === 3 && (
                     <div className="animate-in fade-in duration-500">
                         <StepHeading num="3" title="Tech Stack" sub="Wähle die beteiligten Applikationen" />
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-10">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
                             {AVAILABLE_TOOLS.map(tool => (
-                                <button key={tool} onClick={() => toggleTool(tool)} className={`p-4 rounded-2xl border-2 transition-all flex items-center justify-between font-bold text-xs uppercase ${selectedTools.includes(tool) ? 'border-blue-600 bg-blue-600 text-white shadow-lg' : 'border-gray-50 dark:border-gray-700 text-gray-400 hover:border-blue-300'}`}>
-                                    {tool} {selectedTools.includes(tool) && <Check size={16}/>}
+                                <button 
+                                    key={tool} 
+                                    onClick={() => toggleTool(tool)} 
+                                    className={`p-4 rounded-k5-sm border transition-all flex items-center justify-between font-bold text-[10px] uppercase tracking-wider ${
+                                        selectedTools.includes(tool) 
+                                        ? 'border-k5-digital bg-k5-digital text-white shadow-lg' 
+                                        : 'border-gray-100 dark:border-k5-deep text-gray-400 hover:border-k5-digital/50'
+                                    }`}
+                                >
+                                    {tool} {selectedTools.includes(tool) && <Check size={14}/>}
                                 </button>
                             ))}
                         </div>
-                        <button onClick={() => selectedTools.length > 0 ? setStep(4) : alert('Tool wählen!')} className="w-full py-5 bg-blue-600 text-white font-black rounded-3xl uppercase italic tracking-widest shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3">
-                             Weiter zum Engine-Check <Rocket size={20}/>
+                        <button onClick={() => selectedTools.length > 0 ? setStep(4) : alert('Tool wählen!')} className="w-full py-6 bg-glow-digital text-white font-bold rounded-k5-md uppercase tracking-[0.2em] text-xs shadow-xl shadow-k5-digital/25 flex items-center justify-center gap-4 active:scale-95 transition-all">
+                             Engine-Check einleiten <Rocket size={20}/>
                         </button>
                     </div>
                 )}
@@ -111,16 +131,18 @@ export default function AutomationView() {
                 {step === 4 && (
                     <div className="animate-in fade-in duration-500">
                         <StepHeading num="4" title="Automation Engine" />
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <button onClick={() => { setAutomationMode('zapier'); setStep(5); }} className="p-8 rounded-[2.5rem] border-2 border-gray-50 dark:border-gray-700 hover:border-blue-600 transition-all text-left group">
-                                <Zap className="text-orange-500 mb-4" size={32}/>
-                                <h4 className="font-black text-xl italic uppercase dark:text-white group-hover:text-blue-600">Linear (Zapier)</h4>
-                                <p className="text-xs text-gray-400 font-bold uppercase mt-2">"Wenn X, dann Y". Einfache Workflows ohne komplexe Logik.</p>
+                        <div className="grid md:grid-cols-2 gap-8">
+                            <button onClick={() => { setAutomationMode('zapier'); setStep(5); }} className="p-10 rounded-k5-lg border border-gray-100 dark:border-k5-deep hover:border-k5-digital bg-k5-light-grey/20 dark:bg-k5-deep/10 transition-all text-left group relative overflow-hidden">
+                                <Zap className="text-k5-sand mb-6" size={40}/>
+                                <h4 className="font-bold text-2xl uppercase tracking-tight dark:text-white group-hover:text-k5-digital transition-colors">Linear (Zapier)</h4>
+                                <p className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-4 leading-relaxed">"Wenn X, dann Y". Einfache Workflows ohne komplexe Logik.</p>
+                                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Zap size={100} /></div>
                             </button>
-                            <button onClick={() => { setAutomationMode('n8n'); setStep(5); }} className="p-8 rounded-[2.5rem] border-2 border-gray-50 dark:border-gray-700 hover:border-blue-600 transition-all text-left group">
-                                <Cpu className="text-blue-500 mb-4" size={32}/>
-                                <h4 className="font-black text-xl italic uppercase dark:text-white group-hover:text-blue-600">Advanced (n8n)</h4>
-                                <p className="text-xs text-gray-400 font-bold uppercase mt-2">Komplexe Logik, Verzweigungen & DSGVO-konforme Datenwege.</p>
+                            <button onClick={() => { setAutomationMode('n8n'); setStep(5); }} className="p-10 rounded-k5-lg border border-gray-100 dark:border-k5-deep hover:border-k5-digital bg-k5-light-grey/20 dark:bg-k5-deep/10 transition-all text-left group relative overflow-hidden">
+                                <Cpu className="text-k5-digital mb-6" size={40}/>
+                                <h4 className="font-bold text-2xl uppercase tracking-tight dark:text-white group-hover:text-k5-digital transition-colors">Advanced (n8n)</h4>
+                                <p className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-4 leading-relaxed">Komplexe Logik, Verzweigungen & DSGVO-konforme Datenwege.</p>
+                                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Cpu size={100} /></div>
                             </button>
                         </div>
                     </div>
@@ -130,26 +152,32 @@ export default function AutomationView() {
                 {step === 5 && (
                     <div className="animate-in fade-in duration-500">
                         <StepHeading num="5" title={`Config: ${automationMode}`} />
-                        <div className="space-y-4 mb-10">
+                        <div className="space-y-6 mb-12">
                             {selectedTools.map((tool, index) => (
-                                <div key={tool} className="bg-gray-50 dark:bg-gray-900 p-6 rounded-[2rem] flex flex-col md:flex-row gap-6 items-center">
-                                    <div className="flex items-center gap-4 w-full md:w-1/3">
-                                        <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black italic shadow-lg">{index + 1}</div>
+                                <div key={tool} className="bg-k5-light-grey dark:bg-k5-deep/20 p-6 rounded-k5-md flex flex-col md:flex-row gap-8 items-center border border-gray-50 dark:border-k5-deep/30">
+                                    <div className="flex items-center gap-6 w-full md:w-2/5">
+                                        <div className="w-12 h-12 rounded-k5-sm bg-k5-digital text-white flex items-center justify-center font-black shadow-lg shadow-k5-digital/20">{index + 1}</div>
                                         <div className="flex flex-col">
-                                            <span className="font-black italic uppercase text-sm dark:text-white">{tool}</span>
-                                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full w-max tracking-widest ${index === 0 ? 'bg-orange-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'}`}>{index === 0 ? 'Trigger' : 'Action'}</span>
+                                            <span className="font-bold uppercase text-base dark:text-white tracking-tight">{tool}</span>
+                                            <span className={`text-[9px] font-bold uppercase px-3 py-1 rounded-full w-max tracking-widest mt-1 ${index === 0 ? 'bg-k5-sand text-white' : 'bg-gray-200 dark:bg-k5-deep text-gray-500'}`}>{index === 0 ? 'Trigger' : 'Action'}</span>
                                         </div>
-                                        <div className="flex gap-1 ml-auto">
-                                            <button onClick={() => moveTool(index, -1)} disabled={index === 0} className="p-1 hover:text-blue-600 disabled:opacity-20"><ChevronUp size={20} /></button>
-                                            <button onClick={() => moveTool(index, 1)} disabled={index === selectedTools.length - 1} className="p-1 hover:text-blue-600 disabled:opacity-20"><ChevronDown size={20} /></button>
+                                        <div className="flex gap-2 ml-auto">
+                                            <button onClick={() => moveTool(index, -1)} disabled={index === 0} className="p-2 hover:text-k5-digital disabled:opacity-10"><ChevronUp size={24} /></button>
+                                            <button onClick={() => moveTool(index, 1)} disabled={index === selectedTools.length - 1} className="p-2 hover:text-k5-digital disabled:opacity-10"><ChevronDown size={24} /></button>
                                         </div>
                                     </div>
-                                    <input type="text" placeholder={index === 0 ? "Event (z.B. Neuer Lead)" : "Aktion (z.B. Mail senden)"} className="flex-1 p-4 bg-white dark:bg-gray-800 dark:text-white rounded-2xl border-none font-bold text-sm outline-none ring-2 ring-transparent focus:ring-blue-500/20" value={toolDescriptions[tool] || ''} onChange={(e) => updateDescription(tool, e.target.value)} />
+                                    <input 
+                                        type="text" 
+                                        placeholder={index === 0 ? "Event (z.B. Neuer Lead)" : "Aktion (z.B. Mail senden)"} 
+                                        className="flex-1 p-5 bg-white dark:bg-k5-black dark:text-white rounded-k5-sm border border-transparent focus:border-k5-digital/30 font-bold text-sm outline-none transition-all" 
+                                        value={toolDescriptions[tool] || ''} 
+                                        onChange={(e) => updateDescription(tool, e.target.value)} 
+                                    />
                                 </div>
                             ))}
                         </div>
-                        <button onClick={() => setStep(6)} className="w-full py-5 bg-blue-600 text-white font-black rounded-3xl uppercase italic tracking-widest shadow-xl flex items-center justify-center gap-3">
-                            <Boxes size={20}/> Generate Blueprint
+                        <button onClick={() => setStep(6)} className="w-full py-6 bg-glow-digital text-white font-bold rounded-k5-md uppercase tracking-[0.2em] text-xs shadow-xl flex items-center justify-center gap-4">
+                            <Boxes size={22}/> Blueprint generieren
                         </button>
                     </div>
                 )}
@@ -157,45 +185,45 @@ export default function AutomationView() {
                 {/* STEP 6: Result */}
                 {step === 6 && (
                     <div className="animate-in zoom-in-95 duration-500 text-center">
-                        <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-xl">
-                            <Check size={40} strokeWidth={3}/>
+                        <div className="w-24 h-24 bg-k5-light-grey dark:bg-k5-deep/40 text-k5-digital rounded-k5-md flex items-center justify-center mx-auto mb-8 shadow-inner">
+                            <Check size={48} strokeWidth={3}/>
                         </div>
-                        <h3 className="text-3xl font-black text-gray-900 dark:text-white uppercase italic tracking-tight mb-8">Blueprint Ready!</h3>
+                        <h3 className="text-4xl font-black text-k5-black dark:text-white uppercase tracking-tighter mb-10 leading-none text-center">Blueprint Ready!</h3>
                         
                         {automationMode === 'n8n' ? (
                             <div className="text-left">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 text-center">Copy & Paste this JSON directly into n8n</p>
+                                <p className="text-[10px] font-bold text-k5-sand uppercase tracking-[0.3em] mb-4 text-center">Copy & Paste this JSON directly into n8n</p>
                                 <CodeBlock code={generateN8nJson()} label="n8n-workflow.json" />
                             </div>
                         ) : (
-                            <div className="bg-gray-50 dark:bg-gray-900 p-8 rounded-[2.5rem] text-left border border-gray-100 dark:border-gray-800">
-                                <h4 className="font-black text-sm uppercase italic tracking-widest text-orange-500 mb-6 flex items-center gap-2">
-                                    <Zap size={18}/> Zapier Recipe
+                            <div className="bg-k5-light-grey dark:bg-k5-deep/20 p-10 rounded-k5-lg text-left border border-gray-100 dark:border-k5-deep">
+                                <h4 className="font-bold text-xs uppercase tracking-[0.3em] text-k5-sand mb-8 flex items-center gap-3">
+                                    <Zap size={20} className="text-k5-sand" /> Zapier Recipe
                                 </h4>
-                                <div className="space-y-6">
+                                <div className="space-y-8">
                                     {selectedTools.map((tool, i) => (
-                                        <div key={i} className="flex gap-4 items-start">
-                                            <div className="w-6 h-6 bg-blue-600 text-white rounded-lg flex items-center justify-center text-[10px] font-black italic shrink-0">{i+1}</div>
+                                        <div key={i} className="flex gap-6 items-start">
+                                            <div className="w-8 h-8 bg-k5-digital text-white rounded-k5-sm flex items-center justify-center text-[11px] font-black shrink-0 shadow-lg shadow-k5-digital/20">{i+1}</div>
                                             <div>
-                                                <div className="font-black text-sm uppercase italic dark:text-white">{tool}</div>
-                                                <div className="text-xs text-gray-400 font-bold uppercase">{toolDescriptions[tool] || "Configure Event"}</div>
+                                                <div className="font-bold text-base uppercase tracking-tight dark:text-white">{tool}</div>
+                                                <div className="text-[10px] text-k5-sand font-bold uppercase tracking-widest mt-1">{toolDescriptions[tool] || "Configure Event"}</div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         )}
-                        <button onClick={reset} className="mt-12 text-blue-600 font-black uppercase text-[10px] tracking-widest italic hover:underline">Start New Analysis</button>
+                        <button onClick={reset} className="mt-14 text-k5-digital font-bold uppercase text-[11px] tracking-[0.3em] hover:opacity-70 transition-opacity">Neustart der Analyse</button>
                     </div>
                 )}
 
                 {/* Error / Warning Steps */}
                 {(step === 99 || step === 98) && (
-                    <div className="text-center py-10">
-                        <div className="text-6xl mb-6">{step===99?'🛑':'🧠'}</div>
-                        <h3 className="text-3xl font-black text-gray-900 dark:text-white uppercase italic mb-4">{step===99?'Stop!':'Manuelle Arbeit'}</h3>
-                        <p className="text-gray-500 font-bold uppercase text-xs max-w-sm mx-auto leading-relaxed">{step===99?'Der Aufwand für die Automatisierung übersteigt den Nutzen bei so seltenen Prozessen.':'Prozesse, die Bauchgefühl oder menschliche Intuition brauchen, sind (noch) nicht automatisierbar.'}</p>
-                        <button onClick={reset} className="mt-10 px-8 py-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-black rounded-xl uppercase text-[10px] tracking-widest">Zurück zum Start</button>
+                    <div className="text-center py-16">
+                        <div className="text-7xl mb-8 flex justify-center">{step===99?<Zap className="text-k5-sand" size={64}/>:<Cpu className="text-k5-sand" size={64}/>}</div>
+                        <h3 className="text-4xl font-black text-k5-black dark:text-white uppercase tracking-tighter mb-6">{step===99?'Abbruch!':'Manueller Task'}</h3>
+                        <p className="text-gray-500 font-bold uppercase text-[11px] tracking-widest max-w-md mx-auto leading-relaxed">{step===99?'Der Aufwand für die Automatisierung übersteigt den Nutzen bei so seltenen Prozessen.':'Prozesse, die Bauchgefühl oder menschliche Intuition brauchen, sind aktuell nicht prozess-sicher automatisierbar.'}</p>
+                        <button onClick={reset} className="mt-12 px-10 py-4 bg-k5-light-grey dark:bg-k5-deep text-k5-black dark:text-white font-bold rounded-k5-md uppercase text-[11px] tracking-widest transition-all hover:scale-105">Zurück zum Start</button>
                     </div>
                 )}
             </div>

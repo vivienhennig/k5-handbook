@@ -30,15 +30,9 @@ export default function CalendarView({ currentUser }) {
 
     const handleUpdateEvent = async (eventId, newData) => {
         try {
-            // 1. In Firebase aktualisieren
-            // 'events' ist der Name deiner Collection
             const eventRef = doc(db, 'events', eventId);
             await updateDoc(eventRef, newData);
-
-            // 2. Lokalen State aktualisieren, damit die Änderung sofort sichtbar ist
             setEvents(prev => prev.map(evt => evt.id === eventId ? { ...evt, ...newData } : evt));
-        
-            // 3. Modal schließen oder Feedback geben
             setSelectedEvent(null);
             addToast("Event erfolgreich aktualisiert! 🚀");
         } catch (error) {
@@ -120,73 +114,72 @@ export default function CalendarView({ currentUser }) {
     };
 
     const handleRSVP = async (eventId, status) => {
-    // Check auf currentUser (da das Prop in dieser Datei so heißt)
-    if (!eventId || !currentUser) {
-        addToast("Fehler: Nutzer nicht erkannt", "error");
-        return;
-    }
+        if (!eventId || !currentUser) {
+            addToast("Fehler: Nutzer nicht erkannt", "error");
+            return;
+        }
 
-    try {
-        // 1. API Call mit currentUser
-        await eventApi.updateRSVP(eventId, currentUser.uid, status, currentUser.displayName);
-        
-        // 2. State-Update für das Modal (damit der Button sofort grün wird)
-        setSelectedEvent(prev => {
-            if (!prev) return prev;
-            return {
-                ...prev,
-                participants: {
-                    ...(prev.participants || {}),
-                    [currentUser.uid]: { 
-                        status: status, 
-                        name: currentUser.displayName 
+        try {
+            await eventApi.updateRSVP(eventId, currentUser.uid, status, currentUser.displayName);
+            setSelectedEvent(prev => {
+                if (!prev) return prev;
+                return {
+                    ...prev,
+                    participants: {
+                        ...(prev.participants || {}),
+                        [currentUser.uid]: { status: status, name: currentUser.displayName }
                     }
-                }
-            };
-        });
-
-        // 3. Kalenderliste im Hintergrund aktualisieren
-        await loadEvents();
-        
-        addToast(status === 'going' ? "Zusage gespeichert! 🎉" : "Absage gespeichert.");
-    } catch (error) {
-        console.error("RSVP Error:", error);
-        addToast("Fehler beim Speichern.", "error");
-    }
-};
+                };
+            });
+            await loadEvents();
+            addToast(status === 'going' ? "Zusage gespeichert! 🎉" : "Absage gespeichert.");
+        } catch (error) {
+            console.error("RSVP Error:", error);
+            addToast("Fehler beim Speichern.", "error");
+        }
+    };
 
     return (
         <div className="max-w-7xl mx-auto animate-in fade-in duration-500 pb-20 px-4 font-sans">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-gray-100 dark:border-gray-800 pb-8 gap-6">
+            {/* Header: Italic entfernt, Aeonik Bold (font-bold) und CI Blue genutzt */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-gray-100 dark:border-k5-deep pb-8 gap-6">
                 <div>
-                    <h2 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white flex items-center gap-4 italic tracking-tight uppercase">
-                        <CalendarIcon className="text-blue-600" size={40}/> K5 <span className="text-blue-600">Events</span>
+                    <h2 className="text-4xl lg:text-5xl font-bold text-k5-black dark:text-white flex items-center gap-4 tracking-tight uppercase">
+                        <CalendarIcon className="text-k5-digital" size={40}/> K5 <span className="text-k5-digital">Events</span>
                     </h2>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2 font-bold uppercase text-xs tracking-widest italic">Termine, Deadlines & Event-Phasen</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2 font-bold uppercase text-xs tracking-widest leading-copy">Termine, Deadlines & Event-Phasen</p>
                 </div>
                 {isPrivileged && (
-                    <button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-2xl font-black uppercase italic tracking-widest text-xs transition-all shadow-xl shadow-blue-500/20 flex items-center gap-2 active:scale-95">
+                    <button 
+                        onClick={() => setIsModalOpen(true)} 
+                        className="bg-glow-digital text-white px-8 py-3.5 rounded-k5-md font-bold uppercase tracking-widest text-xs transition-all shadow-xl shadow-k5-digital/20 flex items-center gap-2 active:scale-95"
+                    >
                         <Plus size={18}/> Termin eintragen
                     </button>
                 )}
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div className="flex justify-between items-center p-8 bg-gray-50/50 dark:bg-gray-900/30 border-b border-gray-100 dark:border-gray-700">
-                    <button onClick={() => changeMonth(-1)} className="p-3 hover:bg-white dark:hover:bg-gray-700 rounded-xl transition-all shadow-sm active:scale-90"><ChevronLeft/></button>
-                    <h3 className="text-xl font-black uppercase italic tracking-[0.2em] text-gray-900 dark:text-white">{monthName}</h3>
-                    <button onClick={() => changeMonth(1)} className="p-3 hover:bg-white dark:hover:bg-gray-700 rounded-xl transition-all shadow-sm active:scale-90"><ChevronRight/></button>
+            {/* Kalender Container mit k5-lg Rundung */}
+            <div className="bg-white dark:bg-k5-black rounded-k5-lg shadow-sm border border-gray-100 dark:border-k5-deep overflow-hidden">
+                <div className="flex justify-between items-center p-8 bg-k5-light-grey/30 dark:bg-k5-deep/30 border-b border-gray-100 dark:border-k5-deep">
+                    <button onClick={() => changeMonth(-1)} className="p-3 bg-white dark:bg-k5-black hover:bg-k5-light-grey dark:hover:bg-k5-deep rounded-k5-md transition-all shadow-sm active:scale-90 border border-gray-100 dark:border-k5-deep">
+                        <ChevronLeft className="text-k5-black dark:text-white" />
+                    </button>
+                    <h3 className="text-xl font-bold uppercase tracking-[0.2em] text-k5-black dark:text-white">{monthName}</h3>
+                    <button onClick={() => changeMonth(1)} className="p-3 bg-white dark:bg-k5-black hover:bg-k5-light-grey dark:hover:bg-k5-deep rounded-k5-md transition-all shadow-sm active:scale-90 border border-gray-100 dark:border-k5-deep">
+                        <ChevronRight className="text-k5-black dark:text-white" />
+                    </button>
                 </div>
 
-                <div className="grid grid-cols-7 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                <div className="grid grid-cols-7 bg-white dark:bg-k5-black border-b border-gray-100 dark:border-k5-deep">
                     {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                        <div key={day} className="py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest italic text-center border-r border-gray-50 dark:border-gray-700/50 last:border-none">
+                        <div key={day} className="py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center border-r border-gray-50 dark:border-k5-deep/30 last:border-none">
                             {day}
                         </div>
                     ))}
                 </div>
 
-                <div className="grid grid-cols-7 auto-rows-[minmax(140px,auto)]">
+                <div className="grid grid-cols-7 auto-rows-[minmax(140px,auto)] bg-gray-50 dark:bg-k5-black">
                     {days.map((date, idx) => (
                         <CalendarDay 
                             key={idx} 

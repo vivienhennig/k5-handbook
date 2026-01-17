@@ -11,7 +11,7 @@ export default function EnergyHeader({ user }) {
                 `Guten Morgen, ${firstName}! Erstmal ein Kaffee? ☕️`,
                 `It's a good day, to have a good day 🥰`,
                 `Start your day right, ${firstName}! ⚡️`,
-                `Guten Morgen München (oder Berlin, oder Ostfriesland)!`,
+                `Guten Morgen München!`,
                 `Schön, dass Du da bist, ${firstName}! 🌞`,
                 `Good Morning, ${firstName}! Relax, take it easy. 🌈`,
                 `Hey, ${firstName}! Abundance mindset: Let's create more. 🌊`,
@@ -33,7 +33,7 @@ export default function EnergyHeader({ user }) {
                 `Hey, ${firstName}! Noch kurz die Welt retten? 🌍`,
                 `Energy-Level noch stabil, ${firstName}? ⚡️`,
                 `Bis morgen, ${firstName}? 👋`,
-                `Abend-Modus aktiviert! Gib nochmal alles! 🔥`,
+                `Abend-Modus aktiviert! 🔥`,
                 `Peak Performance, ${firstName}! Greatness is a habit. ⭐`
             ],
             night: [
@@ -60,25 +60,25 @@ export default function EnergyHeader({ user }) {
     const parts = greeting.split('!');
 
     return (
-      <div className="mb-10 pt-4">
-            {/* Minimalistisches Value-Band */}
-            <div className="flex gap-4 mb-4 overflow-x-auto no-scrollbar py-1">
+      <div className="mb-12 pt-6 font-sans">
+            {/* Minimalistisches Value-Band: Italic entfernt, Aeonik Bold genutzt */}
+            <div className="flex gap-6 mb-6 overflow-x-auto no-scrollbar py-1">
                 {['Boldness', 'Energy', 'Greatness', 'Ownership', 'Abundance', 'Trust'].map((val) => (
-                    <span key={val} className="text-[7px] font-black uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 border-b border-transparent hover:border-blue-600 transition-colors cursor-default">
+                    <span key={val} className="text-[8px] font-black uppercase tracking-[0.4em] text-gray-300 dark:text-gray-500 border-b-2 border-transparent hover:border-k5-digital transition-all cursor-default">
                         {val}
                     </span>
                 ))}
             </div>
 
-            <div className="flex flex-col gap-1">
-                {/* Die Haupt-Begrüßung: Groß, fett, präsent */}
-                <h1 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white tracking-tighter italic leading-none">
+            <div className="flex flex-col gap-2">
+                {/* Die Haupt-Begrüßung: Aeonik Bold (font-black), Majuskeln, kein Italic */}
+                <h1 className="text-5xl lg:text-6xl font-black text-k5-black dark:text-white tracking-tighter leading-none uppercase">
                     {parts[0]}
                 </h1>
                 
-                {/* Der Motivations-Spruch: Kleiner, feiner, in K5-Blau */}
+                {/* Der Motivations-Spruch: Aeonik Bold, K5-Digital Blue, kein Italic */}
                 {parts[1] && (
-                    <p className="text-base lg:text-lg font-bold text-blue-600 dark:text-blue-500 tracking-tight max-w-2xl opacity-90">
+                    <p className="text-lg lg:text-xl font-bold text-k5-digital dark:text-k5-heritage tracking-tight max-w-2xl leading-copy">
                         {parts[1].trim()}
                     </p>
                 )}

@@ -16,12 +16,12 @@ export default function LoginView() {
         setLoading(true);
         setError(null);
 
-        // NEU: Domain Validierung
+        // Domain Validierung bleibt identisch
         const emailDomain = "@k5-gmbh.com";
         if (!email.toLowerCase().endsWith(emailDomain)) {
             setError(`Zugriff verweigert. Bitte nutze deine offizielle ${emailDomain} Adresse.`);
             setLoading(false);
-            return; // Prozess hier stoppen
+            return; 
         }
 
         try {
@@ -41,13 +41,13 @@ export default function LoginView() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-6 font-sans relative overflow-hidden">
+        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-k5-black p-6 font-sans relative overflow-hidden">
             
-            {/* Hintergrund-Deko */}
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/5 rounded-full blur-[120px]" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/5 rounded-full blur-[120px]" />
+            {/* Hintergrund-Deko: Glow-Effekte in CI-Farben */}
+            <div className="absolute top-[-15%] left-[-15%] w-[50%] h-[50%] bg-k5-digital/10 rounded-full blur-[140px] animate-pulse" />
+            <div className="absolute bottom-[-15%] right-[-15%] w-[50%] h-[50%] bg-k5-digital/5 rounded-full blur-[140px]" />
 
-            <div className="max-w-[480px] w-full relative">
+            <div className="max-w-[480px] w-full relative z-10">
                 
                 <LoginHeader isRegistering={isRegistering} />
 
@@ -59,10 +59,12 @@ export default function LoginView() {
                     handleSubmit={handleSubmit} setError={setError}
                 />
                 
-                {/* Footer Security Note */}
-                <div className="mt-8 flex items-center justify-center gap-3 text-gray-400 animate-in fade-in duration-1000">
-                    <ShieldCheck size={16} className="text-green-500/50" />
-                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] italic">Internal Only</p>
+                {/* Footer Security Note: Italic entfernt, Aeonik Bold genutzt */}
+                <div className="mt-10 flex items-center justify-center gap-3 text-gray-400 animate-in fade-in duration-1000 delay-500">
+                    <ShieldCheck size={18} className="text-k5-lime/60" />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-k5-sand">
+                        Internal Network Only
+                    </p>
                 </div>
             </div>
         </div>

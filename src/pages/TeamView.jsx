@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users } from 'lucide-react';
+import { Users, SearchX } from 'lucide-react';
 import { userApi } from '../services/api.js';
 import { DEPARTMENT_COLORS } from '../config/data.js';
 import UserCard from '../components/Team/UserCard.jsx';
@@ -15,8 +15,17 @@ export default function TeamView() {
         const loadUsers = async () => {
             try {
                 const data = await userApi.getAllUsers();
-                setUsers(data);
-            } catch (e) { console.error(e); }
+            
+                // Alphabetische Sortierung hinzufügen
+                const sortedData = [...data].sort((a, b) => {
+                    const nameA = a.displayName?.toLowerCase() || '';
+                    const nameB = b.displayName?.toLowerCase() || '';
+                    return nameA.localeCompare(nameB);
+                });
+                setUsers(sortedData);
+            } catch (e) { 
+                console.error(e); 
+            }
             setLoading(false);
         };
         loadUsers();
@@ -39,16 +48,20 @@ export default function TeamView() {
         return matchesSearch && matchesDept;
     });
 
-    if (loading) return <div className="p-20 text-center text-gray-400 font-black animate-pulse uppercase tracking-widest">Gathering the Squad...</div>;
+    if (loading) return (
+        <div className="p-32 text-center text-k5-sand font-bold uppercase tracking-[0.4em] animate-pulse">
+            Gathering the Squad...
+        </div>
+    );
 
     return (
-        <div className="max-w-7xl mx-auto animate-in fade-in duration-500 pb-20 px-4 font-sans">
-            {/* Header */}
-            <div className="mb-16 text-center">
-                <h2 className="text-4xl lg:text-6xl font-black text-gray-900 dark:text-white mb-4 tracking-tighter italic uppercase">
-                    K5 Allstars <span className="text-blue-600">Team</span>
+        <div className="max-w-7xl mx-auto animate-in fade-in duration-500 pb-32 px-4 font-sans">
+            {/* Header: Italic entfernt, Aeonik Black genutzt */}
+            <div className="mb-20 text-center">
+                <h2 className="text-5xl lg:text-7xl font-black text-k5-black dark:text-white mb-6 tracking-tighter uppercase leading-none">
+                    K5 Allstars <span className="text-k5-digital">Team</span>
                 </h2>
-                <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-bold uppercase text-xs tracking-widest italic">
+                <p className="text-k5-sand dark:text-k5-sand/80 max-w-2xl mx-auto font-bold uppercase text-[11px] tracking-[0.3em]">
                     Wer macht was? Alle Ansprechpartner auf einen Blick.
                 </p>
             </div>
@@ -61,7 +74,8 @@ export default function TeamView() {
                 setFilterDept={setFilterDept} 
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {/* Responsive Grid: 3 Spalten auf Laptop (lg), 4 auf XL Monitoren */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 lg:gap-10">
                 {filteredUsers.map(user => (
                     <UserCard 
                         key={user.uid} 
@@ -71,10 +85,18 @@ export default function TeamView() {
                 ))}
             </div>
 
+            {/* Empty State: k5-lg Rundung */}
             {filteredUsers.length === 0 && (
-                <div className="text-center py-24 bg-gray-50 dark:bg-gray-900/50 rounded-[3rem] border-2 border-dashed border-gray-100 dark:border-gray-800">
-                    <Users size={48} className="mx-auto mb-4 text-gray-200"/>
-                    <p className="text-gray-400 font-black uppercase text-[10px] tracking-widest italic">Niemand gefunden, der zu deiner Suche passt.</p>
+                <div className="text-center py-32 bg-white dark:bg-k5-black/40 rounded-k5-lg border-2 border-dashed border-gray-100 dark:border-k5-deep mt-10">
+                    <div className="w-20 h-20 bg-k5-light-grey dark:bg-k5-deep/20 rounded-full flex items-center justify-center mx-auto mb-6 text-k5-sand">
+                        <SearchX size={40} />
+                    </div>
+                    <p className="text-k5-black dark:text-white font-bold uppercase text-xs tracking-[0.2em] mb-2">
+                        Niemand gefunden
+                    </p>
+                    <p className="text-gray-400 text-[10px] uppercase tracking-widest">
+                        Versuche es mit einem anderen Suchbegriff oder Filter.
+                    </p>
                 </div>
             )}
         </div>

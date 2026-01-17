@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import * as Icons from 'lucide-react';
-import { X, ChevronDown } from 'lucide-react';
+import { X, ChevronDown, Sparkles, Search } from 'lucide-react';
 
 export default function WikiCreateModal({ 
     isOpen, 
@@ -36,7 +36,6 @@ export default function WikiCreateModal({
             parentId: selectedParent,
             iconName: selectedIcon
         });
-        // Reset
         setNewWikiName("");
         setSelectedIcon("Hash");
         setIconSearch("");
@@ -44,46 +43,68 @@ export default function WikiCreateModal({
 
     return createPortal(
         <div className={`fixed inset-0 z-[9999] flex items-center justify-center p-6 font-sans ${isDarkMode ? 'dark' : ''}`}>
-            <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-md animate-in fade-in" onClick={onClose}></div>
-            <div className="relative bg-white dark:bg-gray-800 w-full max-w-[550px] rounded-[3rem] p-10 shadow-2xl border border-gray-100 dark:border-gray-700 animate-in zoom-in-95">
-                <div className="flex justify-between items-start mb-8">
+            {/* Backdrop: Dark Deep Overlay */}
+            <div className="absolute inset-0 bg-k5-black/80 backdrop-blur-xl animate-in fade-in duration-500" onClick={onClose}></div>
+            
+            {/* Modal Container: rounded-k5-lg */}
+            <div className="relative bg-white dark:bg-k5-black w-full max-w-[600px] rounded-k5-lg p-10 md:p-12 shadow-2xl border border-gray-100 dark:border-k5-deep animate-in zoom-in-95 duration-300">
+                
+                {/* Header: Aeonik Black & k5-sand */}
+                <div className="flex justify-between items-start mb-10">
                     <div>
-                        <h2 className="text-3xl font-black mb-1 italic dark:text-white">Neue Seite</h2>
-                        <p className="text-gray-400 text-sm italic font-sans">Handbook Knowledge Node</p>
+                        <h2 className="text-4xl font-black mb-2 uppercase tracking-tighter dark:text-white leading-none">
+                            Neue Seite
+                        </h2>
+                        <div className="flex items-center gap-2">
+                            <Sparkles size={14} className="text-k5-sand" />
+                            <p className="text-k5-sand text-[10px] font-bold uppercase tracking-[0.3em]">Knowledge Node anlegen</p>
+                        </div>
                     </div>
-                    <button onClick={onClose} className="p-2 text-gray-400 hover:text-red-500 transition-all">
-                        <X size={24}/>
+                    <button onClick={onClose} className="p-2 text-gray-300 hover:text-k5-digital transition-all hover:rotate-90 duration-300">
+                        <X size={32} strokeWidth={1.5} />
                     </button>
                 </div>
                 
-                <div className="space-y-6">
+                <div className="space-y-8">
+                    {/* Titel Input: Aeonik Bold */}
                     <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-2 block ml-1 font-sans">Titel</label>
+                        <label className="text-[10px] font-bold uppercase tracking-[0.25em] text-k5-digital mb-3 block ml-1">Page Title</label>
                         <input 
                             autoFocus
-                            className="w-full bg-gray-50 dark:bg-gray-900 p-5 rounded-2xl border-2 border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-gray-950 outline-none text-xl font-bold transition-all dark:text-white font-sans" 
+                            className="w-full bg-k5-light-grey dark:bg-k5-deep/20 p-6 rounded-k5-md border-2 border-transparent focus:border-k5-digital/30 focus:bg-white dark:focus:bg-k5-black outline-none text-2xl font-bold transition-all dark:text-white placeholder:opacity-30" 
                             value={newWikiName} 
                             onChange={e => setNewWikiName(e.target.value)} 
-                            placeholder="Name der Seite..." 
+                            placeholder="z.B. Hotel Setup 2026..." 
                         />
                     </div>
 
+                    {/* Icon Picker: k5-sm grid */}
                     <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-2 block ml-1 font-sans">Icon suchen</label>
-                        <input 
-                            className="w-full bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border-none outline-blue-500 text-sm mb-3 dark:text-white font-sans" 
-                            placeholder="Suche (en): car, heart, tool..." 
-                            value={iconSearch} 
-                            onChange={e => setIconSearch(e.target.value)} 
-                        />
-                        <div className="grid grid-cols-6 gap-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-2xl max-h-[160px] overflow-y-auto scrollbar-hide">
+                        <div className="flex justify-between items-end mb-3 px-1">
+                            <label className="text-[10px] font-bold uppercase tracking-[0.25em] text-k5-digital">Visual Identifier</label>
+                            <div className="relative w-40 group">
+                                <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-k5-digital transition-colors" />
+                                <input 
+                                    className="w-full bg-k5-light-grey/50 dark:bg-k5-deep/30 pl-8 pr-3 py-1.5 rounded-k5-sm border border-transparent focus:border-k5-digital/20 text-[10px] font-bold outline-none dark:text-white transition-all" 
+                                    placeholder="Search Icons..." 
+                                    value={iconSearch} 
+                                    onChange={e => setIconSearch(e.target.value)} 
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-6 gap-3 bg-k5-light-grey/30 dark:bg-k5-deep/10 p-4 rounded-k5-md max-h-[180px] overflow-y-auto custom-scrollbar border border-gray-50 dark:border-k5-deep/30">
                             {filteredIcons.map(name => {
                                 const IconComp = Icons[name] || Icons.Hash;
                                 return (
                                     <button 
                                         key={name} 
                                         onClick={() => setSelectedIcon(name)} 
-                                        className={`p-3 rounded-xl flex items-center justify-center transition-all ${selectedIcon === name ? 'bg-blue-600 text-white scale-110 shadow-lg' : 'bg-white dark:bg-gray-700 text-gray-400 hover:text-blue-500'}`}
+                                        className={`p-4 rounded-k5-sm flex items-center justify-center transition-all duration-300 ${
+                                            selectedIcon === name 
+                                            ? 'bg-k5-digital text-white scale-110 shadow-xl shadow-k5-digital/30' 
+                                            : 'bg-white dark:bg-k5-black text-gray-400 hover:text-k5-digital hover:shadow-md'
+                                        }`}
+                                        title={name}
                                     >
                                         <IconComp size={20} />
                                     </button>
@@ -92,30 +113,37 @@ export default function WikiCreateModal({
                         </div>
                     </div>
 
+                    {/* Parent Selection: rounded-k5-md */}
                     <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-2 block ml-1 font-sans">Einordnung</label>
+                        <label className="text-[10px] font-bold uppercase tracking-[0.25em] text-k5-digital mb-3 block ml-1">Einordnung (Parent)</label>
                         <div className="relative">
                             <select 
                                 value={selectedParent} 
                                 onChange={e => setSelectedParent(e.target.value)} 
-                                className="w-full bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl border-none font-bold dark:text-white cursor-pointer appearance-none font-sans"
+                                className="w-full bg-k5-light-grey/50 dark:bg-k5-deep/20 p-5 rounded-k5-md border border-transparent focus:border-k5-digital/30 font-bold dark:text-white cursor-pointer appearance-none outline-none transition-all uppercase text-[11px] tracking-widest"
                             >
                                 <option value="custom">📁 Weitere Wikis (Eigene Gruppe)</option>
                                 <option value="event_main">🎫 Event Operations (Setup)</option>
                                 <option value="guide_main">📚 Guidelines & Standards</option>
                             </select>
-                            <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                            <ChevronDown size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-k5-sand pointer-events-none" />
                         </div>
                     </div>
                 </div>
 
-                <div className="flex gap-4 mt-10 font-sans">
-                    <button onClick={onClose} className="flex-1 py-4 font-bold text-gray-400 font-sans uppercase text-xs tracking-widest">Abbrechen</button>
+                {/* Actions: k5-digital Glow Button */}
+                <div className="flex items-center gap-6 mt-12">
+                    <button 
+                        onClick={onClose} 
+                        className="flex-1 py-4 font-bold text-gray-400 hover:text-k5-black dark:hover:text-white uppercase text-[10px] tracking-[0.3em] transition-colors"
+                    >
+                        Abbrechen
+                    </button>
                     <button 
                         onClick={handleCreate} 
-                        className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-500/20 active:scale-95 transition-all font-sans"
+                        className="flex-[2] py-5 bg-glow-digital text-white rounded-k5-md font-bold uppercase tracking-[0.3em] text-[10px] shadow-2xl shadow-k5-digital/25 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3"
                     >
-                        Seite anlegen
+                        <Sparkles size={16} /> Seite anlegen
                     </button>
                 </div>
             </div>

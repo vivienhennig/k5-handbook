@@ -1,15 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Aeonik', 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.3; /* Copy-Vorgabe: 130% */
 }
 
-/* Custom Scrollbar für Webkit (Chrome, Edge, Safari) */
+/* Headlines global anpassen */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700; /* Aeonik Bold */
+  font-style: normal !important; /* Italic entfernen */
+}
+
+/* Custom Scrollbar für Webkit */
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
@@ -21,19 +26,14 @@ body {
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+    @apply bg-k5-sand/30 dark:bg-k5-deep/50 rounded-full;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-400 dark:bg-gray-500;
-  }
-  
-  /* Sidebar spezifisch: Scrollbar verstecken, aber Scrollen erlauben */
-  .scrollbar-hide::-webkit-scrollbar {
-      display: none;
-  }
   .scrollbar-hide {
       -ms-overflow-style: none;
       scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+      display: none;
   }
 }

@@ -1,8 +1,20 @@
 import React from 'react';
-import { RefreshCw, CheckCircle, Trash2 } from 'lucide-react';
+import { CheckCircle, RefreshCw } from 'lucide-react';
+import FeedbackRow from '../../components/Feedback/FeedbackRow';
 
 export default function FeedbackInbox({ feedbackList, onRefresh, onAction, loadingAction }) {
-    const activeFeedback = feedbackList?.filter(item => item.status !== 'resolved') || [];
+    const activeFeedback = React.useMemo(() => {
+        if (!feedbackList) return [];
+        
+        return [...feedbackList]
+            .filter(item => item.status !== 'resolved')
+            .sort((a, b) => {
+                // Konvertierung in Zeitstempel für den Vergleich
+                const timeA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt).getTime();
+                const timeB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt).getTime();
+                return timeB - timeA; // B - A sorgt für absteigende Sortierung (neueste zuerst)
+            });
+    }, [feedbackList]);
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
@@ -10,7 +22,10 @@ export default function FeedbackInbox({ feedbackList, onRefresh, onAction, loadi
             <div className="p-8 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/30">
                 <div className="flex items-center gap-3">
                     <h3 className="font-black text-gray-900 dark:text-white uppercase italic tracking-widest text-xs">Feedback Inbox</h3>
-                    <button onClick={onRefresh} className="p-2 hover:bg-white dark:hover:bg-gray-700 rounded-xl transition-all shadow-sm active:rotate-180 duration-500">
+                    <button 
+                        onClick={onRefresh} 
+                        className="p-2 hover:bg-white dark:hover:bg-gray-700 rounded-xl transition-all shadow-sm active:rotate-180 duration-500"
+                    >
                         <RefreshCw size={14} className="text-blue-600"/>
                     </button>
                 </div>
@@ -37,40 +52,12 @@ export default function FeedbackInbox({ feedbackList, onRefresh, onAction, loadi
                         </thead>
                         <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
                             {activeFeedback.map((item) => (
-                                <tr key={item.id} className={`hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-all ${loadingAction === item.id ? 'opacity-30' : ''}`}>
-                                    <td className="px-8 py-6 text-[11px] font-bold text-gray-400">
-                                        <div className="flex flex-col">
-                                            <span>{new Date(item.createdAt).toLocaleDateString()}</span>
-                                            <span className="text-blue-500/50">{new Date(item.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-6">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 flex items-center justify-center text-[10px] font-black">
-                                                {item.user?.charAt(0) || '?'}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <div className="text-xs font-black text-gray-900 dark:text-white uppercase truncate">{item.user}</div>
-                                                <div className="text-[9px] font-mono text-gray-400 bg-gray-100 dark:bg-gray-900 px-1.5 py-0.5 rounded mt-1 inline-block">
-                                                    @{item.context || 'General'}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-6 text-sm text-gray-600 dark:text-gray-300 italic leading-relaxed">
-                                        "{item.text}"
-                                    </td>
-                                    <td className="px-8 py-6 text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <button onClick={() => onAction(item.id, 'resolve')} className="p-2 hover:bg-green-50 dark:hover:bg-green-900/30 text-green-500 rounded-xl transition-all hover:scale-110">
-                                                <CheckCircle size={18}/>
-                                            </button>
-                                            <button onClick={() => onAction(item.id, 'delete')} className="p-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-400 rounded-xl transition-all hover:scale-110">
-                                                <Trash2 size={18}/>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <FeedbackRow 
+                                    key={item.id} 
+                                    item={item} 
+                                    onAction={onAction} 
+                                    isLoading={loadingAction === item.id}
+                                />
                             ))}
                         </tbody>
                     </table>

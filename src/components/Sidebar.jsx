@@ -3,7 +3,7 @@ import * as Icons from 'lucide-react';
 import { 
     Home, Calendar, Palmtree, Users, Wrench, Database,
     ChevronRight, LayoutGrid, PlusCircle, LogOut, Settings,
-    Tent, BookOpen
+    Tent, BookOpen, Shield // Shield für Admin hinzugefügt
 } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle'; 
 
@@ -102,6 +102,11 @@ export default function Sidebar({
                     <NavItem id="tools" icon={Wrench} label="Toolbox" colorClass="text-blue-500" />
                     <NavItem id="resources" icon={Database} label="Ressourcen" colorClass="text-emerald-500" />
                     <NavItem id="automation" icon={Database} label="Automation" colorClass="text-orange-500" />
+                    
+                    {/* Admin Dashboard Verlinkung */}
+                    {user?.role === 'admin' && (
+                        <NavItem id="admin" icon={Shield} label="Admin Panel" colorClass="text-red-500" />
+                    )}
                 </div>
             </div>
 
@@ -130,7 +135,6 @@ export default function Sidebar({
                         </div>
                     </button>
 
-                    {/* HIER: Der integrierte ThemeToggle */}
                     <ThemeToggle />
                 </div>
 

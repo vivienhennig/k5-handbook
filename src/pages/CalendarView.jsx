@@ -3,6 +3,9 @@ import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight } from 'lucid
 import { eventApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
 
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from '../config/firebase';
+
 // Komponenten
 import CalendarDay from '../components/Calendar/CalendarDay';
 import CreateEventModal from '../components/Calendar/CreateEventModal';
@@ -24,6 +27,25 @@ export default function CalendarView({ currentUser }) {
         const data = await eventApi.getAllEvents();
         setEvents(data);
     };
+
+    const handleUpdateEvent = async (eventId, newData) => {
+    try {
+        // 1. In Firebase aktualisieren
+        // 'events' ist der Name deiner Collection
+        const eventRef = doc(db, 'events', eventId);
+        await updateDoc(eventRef, newData);
+
+        // 2. Lokalen State aktualisieren, damit die Änderung sofort sichtbar ist
+        setEvents(prev => prev.map(evt => evt.id === eventId ? { ...evt, ...newData } : evt));
+        
+        // 3. Modal schließen oder Feedback geben
+        setSelectedEvent(null);
+        addToast("Event erfolgreich aktualisiert! 🚀");
+    } catch (error) {
+        console.error("Fehler beim Update:", error);
+        addToast("Fehler beim Speichern der Änderungen", "error");
+    }
+};
 
     const handleSave = async (formData) => {
         setLoading(true);
@@ -171,6 +193,7 @@ export default function CalendarView({ currentUser }) {
                 currentUser={currentUser}
                 onRSVP={handleRSVP}
                 isPrivileged={isPrivileged}
+                onUpdate={handleUpdateEvent}
             />
 
             <CreateEventModal 

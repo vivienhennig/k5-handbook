@@ -11,7 +11,7 @@ export default function BirthdayCard({ birthdayKids }) {
                     <div key={i} className="flex justify-between items-center border-b border-gray-50 dark:border-gray-800 pb-2 last:border-0">
                         <span className="font-bold text-gray-900 dark:text-white">{kid.displayName}</span>
                         <span className="text-[10px] font-black text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded">
-                            {kid.nextBirthday?.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}.
+                            {kid.nextBirthday?.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}
                         </span>
                     </div>
                 ))}

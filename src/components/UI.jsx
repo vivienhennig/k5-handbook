@@ -54,19 +54,3 @@ export const CodeBlock = ({ code, label = "JSON" }) => {
     </div>
   );
 };
-
-export const NewsWidget = ({ news }) => (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
-        <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2"><Bell size={18} className="text-blue-600 dark:text-blue-400"/> Updates</h3>
-        <div className="space-y-4">
-            {news && news.length > 0 ? news.map((item, i) => (
-                <div key={item.id || i} className="flex gap-3 text-sm">
-                    <span className="font-mono text-gray-400 shrink-0">{item.date}</span>
-                    <span className="text-gray-700 dark:text-gray-300">
-                        {item.type === 'alert' && '🔴 '} {item.type === 'update' && '🔵 '} {item.type === 'info' && '🟢 '} {item.text}
-                    </span>
-                </div>
-            )) : <div className="text-gray-400 text-sm">Keine aktuellen Nachrichten.</div>}
-        </div>
-    </div>
-);

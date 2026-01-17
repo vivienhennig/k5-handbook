@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckCircle, RefreshCw } from 'lucide-react';
-import FeedbackRow from '../../components/Feedback/FeedbackRow';
+import FeedbackRow from '../../components/Feedback/FeedbackRow.jsx';
 
 export default function FeedbackInbox({ feedbackList, onRefresh, onAction, loadingAction }) {
     const activeFeedback = React.useMemo(() => {

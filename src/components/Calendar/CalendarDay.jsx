@@ -1,5 +1,5 @@
 import React from 'react';
-import { EVENT_TYPES } from '../../config/data';
+import { EVENT_TYPES } from '../../config/data.js';
 
 export default function CalendarDay({ date, events, isToday, onClickEvent }) {
     if (!date) {

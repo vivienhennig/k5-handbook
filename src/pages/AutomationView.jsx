@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Check, Zap, Cpu, ChevronUp, ChevronDown, Rocket, RotateCcw, Boxes } from 'lucide-react';
-import { AVAILABLE_TOOLS } from '../config/data';
-import { CodeBlock } from '../components/UI';
+import { AVAILABLE_TOOLS } from '../config/data.js';
+import { CodeBlock } from '../components/UI.jsx';
 
 export default function AutomationView() {
     const [step, setStep] = useState(1);

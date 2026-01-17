@@ -4,7 +4,7 @@ import {
   Layout, Calendar, Palmtree, Settings, 
   ExternalLink, Layers, LifeBuoy, CreditCard, Shield, FileText, MousePointer, Cpu, Users, Wrench, Book, QrCode, User
 } from 'lucide-react';
-import { SECTIONS_CONFIG, RESOURCE_LINKS, TECH_STACK } from '../config/data';
+import { SECTIONS_CONFIG, RESOURCE_LINKS, TECH_STACK } from '../config/data.js';
 
 export default function Header({ 
     user, activeTab, handleNav, toggleDarkMode, darkMode, 

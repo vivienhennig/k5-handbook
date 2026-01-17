@@ -1,6 +1,6 @@
 import React from 'react';
 import { QrCode, MapPin, Wrench } from 'lucide-react';
-import ToolCard from '../components/Tools/ToolCard'; // Wir nutzen deine Komponente
+import ToolCard from '../components/Tools/ToolCard.jsx';
 
 export default function ToolsView({ handleNav }) {
     

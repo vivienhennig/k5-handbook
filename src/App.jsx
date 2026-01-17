@@ -1,30 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from './components/Sidebar';
-import MainContent from './components/MainContent';
-import LoginView from './pages/LoginView';
-import FeedbackButton from './components/FeedbackButton';
-import ProfileModal from './components/ProfileModal';
-import WikiCreateModal from './components/WikiCreateModal';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Sidebar from './components/Main/Sidebar.jsx';
+import MainContent from './components/Main/MainContent.jsx';
+import LoginView from './pages/LoginView.jsx';
+import FeedbackButton from './components/Feedback/FeedbackButton.jsx';
+import ProfileModal from './components/Profile/ProfileModal.jsx';
+import WikiCreateModal from './components/Wiki/WikiCreateModal.jsx';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from './config/firebase';
-import { userApi, eventApi, feedbackApi, contentApi } from './services/api';
+import { auth } from './config/firebase.js';
+import { userApi, eventApi, feedbackApi, contentApi } from './services/api.js';
 
 function App() {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  const [activeTab, setActiveTab] = useState('home');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isWikiCreateModalOpen, setIsWikiCreateModalOpen] = useState(false);
   
-  // Data States
   const [customWikis, setCustomWikis] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [adminFeedbackList, setAdminFeedbackList] = useState([]);
 
-  // Auth Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
@@ -70,12 +67,6 @@ function App() {
       }
   };
 
-  const handleNav = (tabId) => {
-    setActiveTab(tabId);
-    setIsMobileMenuOpen(false);
-  };
-
-  // Funktion zum Speichern eines neuen Wikis
   const handleCreateWiki = async (wikiConfig) => {
     const wikiId = wikiConfig.title.toLowerCase().replace(/\s+/g, '_');
     const newList = [...customWikis, { id: wikiId, title: wikiConfig.title, iconName: wikiConfig.iconName }];
@@ -89,7 +80,8 @@ function App() {
     
     await loadNavigation();
     setIsWikiCreateModalOpen(false);
-    handleNav(wikiId);
+    // Navigation erfolgt nach dem Erstellen via Pfad
+    window.location.href = `/wiki/${wikiId}`;
   };
 
   if (loading) return <div className="flex items-center justify-center h-screen bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
@@ -99,44 +91,59 @@ function App() {
   const isPrivileged = userData?.role === 'admin' || userData?.role === 'privileged';
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden text-gray-900 dark:text-gray-100 font-sans">
-      
-      {/* Modale */}
-      {isProfileModalOpen && (
-          <ProfileModal user={userData} onClose={() => setIsProfileModalOpen(false)} onUpdate={refreshUserData} />
-      )}
-      {isWikiCreateModalOpen && (
-          <WikiCreateModal isOpen={isWikiCreateModalOpen} onClose={() => setIsWikiCreateModalOpen(false)} onSave={handleCreateWiki} isDarkMode={false} />
-      )}
+    <Router>
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden text-gray-900 dark:text-gray-100 font-sans">
+        
+        {isProfileModalOpen && (
+            <ProfileModal user={userData} onClose={() => setIsProfileModalOpen(false)} onUpdate={refreshUserData} />
+        )}
+        {isWikiCreateModalOpen && (
+            <WikiCreateModal isOpen={isWikiCreateModalOpen} onClose={() => setIsWikiCreateModalOpen(false)} onSave={handleCreateWiki} isDarkMode={false} />
+        )}
 
-      {/* Sidebar */}
-      <Sidebar 
-        user={user}
-        activeTab={activeTab}
-        handleNav={handleNav}
-        customWikis={customWikis}
-        isPrivileged={isPrivileged}
-        onLogout={handleLogout}
-        onCreateWiki={() => setIsWikiCreateModalOpen(true)}
-        onOpenProfile={() => setIsProfileModalOpen(true)}
-      />
+        {/* Sidebar bleibt immer sichtbar */}
+        <Sidebar 
+          user={user}
+          customWikis={customWikis}
+          isPrivileged={isPrivileged}
+          onLogout={handleLogout}
+          onCreateWiki={() => setIsWikiCreateModalOpen(true)}
+          onOpenProfile={() => setIsProfileModalOpen(true)}
+        />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth" id="main-scroll">
-           <MainContent 
-              user={userData}
-              activeTab={activeTab}
-              upcomingEvents={upcomingEvents}
-              handleNav={handleNav}
-              adminFeedbackList={adminFeedbackList}
-              isPrivileged={isPrivileged}
-              onRefreshFeedback={loadFeedback}
-           />
+        <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+          <div className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth" id="main-scroll">
+             <Routes>
+                {/* Standard-Weiterleitung auf Home */}
+                <Route path="/" element={<Navigate to="/home" replace />} />
+                
+                {/* Dynamische Route für alle Tabs */}
+                <Route path="/:tabId" element={
+                  <MainContent 
+                    user={userData}
+                    upcomingEvents={upcomingEvents}
+                    adminFeedbackList={adminFeedbackList}
+                    isPrivileged={isPrivileged}
+                    onRefreshFeedback={loadFeedback}
+                  />
+                } />
+
+                {/* Eigene Route für Wikis */}
+                <Route path="/wiki/:wikiId" element={
+                  <MainContent 
+                    user={userData}
+                    upcomingEvents={upcomingEvents}
+                    adminFeedbackList={adminFeedbackList}
+                    isPrivileged={isPrivileged}
+                    onRefreshFeedback={loadFeedback}
+                  />
+                } />
+             </Routes>
+          </div>
+          <FeedbackButton user={userData} /> 
         </div>
-        <FeedbackButton user={userData} /> 
       </div>
-    </div>
+    </Router>
   );
 }
 

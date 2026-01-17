@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../config/firebase';
-import { userApi, newsApi, eventApi, feedbackApi, authService } from '../services/api';
-import { MASTER_ADMIN_EMAIL, SECTIONS_CONFIG } from '../config/data';
+import { auth } from '../config/firebase.js';
+import { userApi, eventApi, feedbackApi, authService } from '../services/api.js';
+import { MASTER_ADMIN_EMAIL, SECTIONS_CONFIG } from '../config/data.js';
 
 export function useAppLogic() {
   // Navigation & UI

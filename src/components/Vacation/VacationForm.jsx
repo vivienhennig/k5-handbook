@@ -1,5 +1,5 @@
 import React from 'react';
-import { VACATION_TYPES } from '../../config/data';
+import { VACATION_TYPES } from '../../config/data.js';
 
 export default function VacationForm({ newVacation, setNewVacation, onSubmit, isSubmitting, previewDays }) {
     return (

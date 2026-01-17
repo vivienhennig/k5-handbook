@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, ChevronRight, ChevronLeft } from 'lucide-react';
-import { TUTORIAL_STEPS } from '../../config/data';
+import { TUTORIAL_STEPS } from '../../config/data.js';
 
 export default function TutorialOverlay({ onClose }) {
     const [stepIndex, setStepIndex] = useState(0);

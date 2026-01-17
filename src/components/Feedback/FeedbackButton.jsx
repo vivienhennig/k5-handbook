@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MessageSquarePlus, X, Send, Loader2 } from 'lucide-react';
-import { feedbackApi } from '../services/api';
+import { feedbackApi } from '../../services/api.js';
 
 export default function FeedbackButton({ user }) { 
     const [isOpen, setIsOpen] = useState(false);
@@ -44,7 +44,7 @@ export default function FeedbackButton({ user }) {
                                 value={text}
                                 onChange={(e) => setText(e.target.value)}
                                 className="w-full text-xs p-2 border border-gray-200 dark:border-gray-600 rounded-lg mb-2 dark:bg-gray-700 dark:text-white resize-none focus:ring-2 focus:ring-blue-500 outline-none" 
-                                rows="3" 
+                                rows={3} 
                                 placeholder="Erzähl uns, was wir verbessern können..."
                                 required
                                 disabled={status === 'loading'}

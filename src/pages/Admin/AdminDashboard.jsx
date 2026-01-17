@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { MessageSquare, Users, Shield } from 'lucide-react';
-import AdminUserManagement from './AdminUserManagement'; 
-import FeedbackInbox from './FeedbackInbox'; // Neu importiert
-import { feedbackApi } from '../../services/api';
+import { MessageSquare, Users, Shield, Tag } from 'lucide-react'; // Tag Icon hinzugefügt
+import AdminUserManagement from './AdminUserManagement.jsx'; 
+import FeedbackInbox from './FeedbackInbox.jsx';
+import AdminTicketEditor from '../../components/Admin/AdminTicketEditor.jsx';
+import { feedbackApi } from '../../services/api.js';
 
 export default function AdminDashboard({ feedbackList = [], onRefreshFeedback, currentUser }) {
     const [activeSubTab, setActiveSubTab] = useState('feedback');
@@ -33,11 +34,12 @@ export default function AdminDashboard({ feedbackList = [], onRefreshFeedback, c
                     <p className="text-gray-500 dark:text-gray-400 mt-2 font-bold uppercase text-xs tracking-widest italic">Systemstatus & Feedback Zentrale</p>
                 </div>
 
-                {/* Tab Switcher */}
+                {/* Tab Switcher - Jetzt mit 3 Optionen */}
                 <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
                     {[
                         { id: 'feedback', icon: MessageSquare, label: 'Feedback' },
-                        { id: 'users', icon: Users, label: 'Users' }
+                        { id: 'users', icon: Users, label: 'Users' },
+                        { id: 'tickets', icon: Tag, label: 'Tickets' } // Neuer Tab
                     ].map(tab => (
                         <button 
                             key={tab.id}
@@ -56,15 +58,21 @@ export default function AdminDashboard({ feedbackList = [], onRefreshFeedback, c
 
             {/* Content Area */}
             <div className="min-h-[500px]">
-                {activeSubTab === 'feedback' ? (
+                {activeSubTab === 'feedback' && (
                     <FeedbackInbox 
                         feedbackList={feedbackList} 
                         onRefresh={onRefreshFeedback} 
                         onAction={handleAction}
                         loadingAction={loadingAction}
                     />
-                ) : (
+                )}
+                
+                {activeSubTab === 'users' && (
                     <AdminUserManagement currentUser={currentUser} />
+                )}
+
+                {activeSubTab === 'tickets' && (
+                    <AdminTicketEditor />
                 )}
             </div>
         </div>

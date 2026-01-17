@@ -30,12 +30,6 @@ export const TICKET_PHASES = [
   { name: "Full Price", date: "bis 25.06.", price: "899€", nonRetailer: "1.699€" },
 ];
 
-export const SNIPPETS = [
-  { id: "snip_ticket", title: "🎟️ Ticket nicht erhalten", text: `Hallo [Name],\n\nvielen Dank für deine Nachricht.\n\nIch habe gerade im System nachgeschaut: Deine Bestellung war erfolgreich! 🎉\nManchmal landen die Tickets im Spam-Ordner. Der Absender ist "Vivenu".\n\nIch habe dir das Ticket zur Sicherheit nochmal an [Email] gesendet.\nSag Bescheid, falls es immer noch nicht da ist.\n\nLiebe Grüße,\n[Dein Name]` },
-  { id: "snip_invoice", title: "📄 Rechnung ändern (Adresse)", text: `Hallo [Name],\n\ndanke für die Info. Ich habe die Rechnungsadresse wie gewünscht angepasst.\nAnbei findest du die korrigierte Rechnung als PDF.\n\nBeste Grüße,\n[Dein Name]` },
-  { id: "snip_cancel", title: "⛔ Storno Anfrage (Ablehnung)", text: `Hallo [Name],\n\ndanke für deine Nachricht. Es tut uns leid zu hören, dass du nicht dabei sein kannst.\n\nLeider sind unsere Tickets laut AGB generell vom Umtausch und der Rückgabe ausgeschlossen. Daher können wir den Betrag nicht erstatten.\n\nDu kannst dein Ticket aber jederzeit an einen Kollegen oder Bekannten weitergeben. Nutze dafür einfach den Link in deiner Bestätigungsmail ("Ticket verwalten").\n\nHoffentlich klappt es beim nächsten Mal!\n\nViele Grüße,\n[Dein Name]` }
-];
-
 export const VOTING_BLUEPRINT = `{
   "name": "Award Voting Workflow",
   "nodes": [
@@ -46,12 +40,6 @@ export const VOTING_BLUEPRINT = `{
 }`;
 
 export const AVAILABLE_TOOLS = ['Hubspot', 'Brevo', 'Google Sheets', 'Vivenu', 'Asana', 'Gmail', 'Slack', 'Google Docs', 'Typeform', 'Wordpress'];
-
-export const INITIAL_NEWS = [
-    { id: 1, date: "15.01.", text: "Neue Non-Retailer Preise im Support-Tab ergänzt.", type: "update" },
-    { id: 2, date: "14.01.", text: "WLAN-Passwort für die Akkreditierung geändert.", type: "alert" },
-    { id: 3, date: "10.01.", text: "Handbook v1.0 ist live! 🎉", type: "info" }
-];
 
 // --- URLAUBS KONFIGURATION ---
 
@@ -158,13 +146,15 @@ export const TECH_STACK = [
 
 export const EVENT_TYPES = {
     'k5_conf': { label: 'K5 Konferenz', color: 'bg-blue-600 text-white', border: 'border-blue-700' },
-    'meetup': { label: 'MEETup', color: 'bg-purple-500 text-white', border: 'border-purple-600' },
-    'female': { label: 'Female Circle', color: 'bg-pink-500 text-white', border: 'border-pink-600' },
-    'dinner': { label: 'Dinner (Partner)', color: 'bg-amber-500 text-white', border: 'border-amber-600' },
+    'meetup': { label: 'MEETup', color: 'bg-indigo-500 text-white', border: 'border-indigo-600' },
+    'female': { label: 'Female Circle', color: 'bg-purple-500 text-white', border: 'border-purple-600' },
+    'dinner': { label: 'Dinner', color: 'bg-stone-500 text-white', border: 'border-stone-600' },
+    'award': { label: 'Award', color: 'bg-yellow-500 text-white', border: 'border-yellow-600' },
+    'deadline': { label: 'Deadline', color: 'bg-red-500 text-white', border: 'border-red-600' },
     'second_seat': { label: 'Second Seat Dinner', color: 'bg-indigo-500 text-white', border: 'border-indigo-600' },
     'team': { label: 'Team Event', color: 'bg-emerald-500 text-white', border: 'border-emerald-600' },
     'scaleup': { label: 'Scale Up', color: 'bg-cyan-500 text-white', border: 'border-cyan-600' },
-    'health': { label: 'Health / Sport', color: 'bg-rose-400 text-white', border: 'border-rose-500' },
+    'health': { label: 'Health / Sport', color: 'bg-green-400 text-white', border: 'border-green-500' },
     'external': { label: 'Extern / Branche', color: 'bg-gray-500 text-white', border: 'border-gray-600' },
 };
 

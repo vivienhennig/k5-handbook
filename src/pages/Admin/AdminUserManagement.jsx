@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { userApi } from '../../services/api';
-import { useToast } from '../../context/ToastContext';
-import UserManagementHeader from '../../components/Admin/UserManagementHeader';
-import UserManagementRow from '../../components/Admin/UserManagementRow'; 
+import React, { useState, useEffect, useMemo } from 'react';
+import { userApi } from '../../services/api.js';
+import { useToast } from '../../context/ToastContext.jsx';
+import UserManagementHeader from '../../components/Admin/UserManagementHeader.jsx';
+import UserManagementRow from '../../components/Admin/UserManagementRow.jsx'; 
 
 export default function AdminUserManagement({ currentUser }) {
     const { addToast } = useToast();
@@ -48,34 +48,44 @@ export default function AdminUserManagement({ currentUser }) {
         } catch (error) { addToast("Fehler beim Speichern", "error"); }
     };
 
-    const filteredUsers = users.filter(u => 
-        u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.department?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Gefilterte und alphabetisch sortierte User-Liste
+    const filteredUsers = useMemo(() => {
+        return users
+            .filter(u => 
+                u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                u.department?.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+            .sort((a, b) => {
+                const nameA = a.displayName || "";
+                const nameB = b.displayName || "";
+                return nameA.localeCompare(nameB, 'de', { sensitivity: 'base' });
+            });
+    }, [users, searchTerm]);
 
-    if (loading) return <div className="p-8 text-center text-gray-400 font-sans">Lade Benutzerdaten...</div>;
+    if (loading) return <div className="p-8 text-center text-gray-400 font-sans italic uppercase tracking-widest font-black">Lade Benutzerdaten...</div>;
 
     return (
         <div className="space-y-6 font-sans">
+            {/* Dein Header mit Statistiken und Search-Input */}
             <UserManagementHeader 
                 userCount={users.length} 
                 searchTerm={searchTerm} 
                 setSearchTerm={setSearchTerm} 
             />
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden transition-all">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
-                        <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-800">
                             <tr>
-                                <th className="px-6 py-4 font-bold text-gray-500 uppercase tracking-wider text-xs italic">Mitarbeiter</th>
-                                <th className="px-6 py-4 font-bold text-gray-500 uppercase tracking-wider text-xs italic">Rolle</th>
-                                <th className="px-6 py-4 font-bold text-gray-500 uppercase tracking-wider text-xs italic">Urlaub</th>
-                                <th className="px-6 py-4 font-bold text-gray-500 uppercase tracking-wider text-xs text-right italic">Aktionen</th>
+                                <th className="px-8 py-5 font-black text-gray-400 uppercase tracking-[0.2em] text-[10px] italic">Mitarbeiter</th>
+                                <th className="px-8 py-5 font-black text-gray-400 uppercase tracking-[0.2em] text-[10px] italic">Rolle</th>
+                                <th className="px-8 py-5 font-black text-gray-400 uppercase tracking-[0.2em] text-[10px] italic">Urlaub</th>
+                                <th className="px-8 py-5 font-black text-gray-400 uppercase tracking-[0.2em] text-[10px] text-right italic">Aktionen</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                        <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
                             {filteredUsers.map(user => (
                                 <UserManagementRow 
                                     key={user.uid}
@@ -97,6 +107,12 @@ export default function AdminUserManagement({ currentUser }) {
                     </table>
                 </div>
             </div>
+            
+            {filteredUsers.length === 0 && (
+                <div className="py-20 text-center">
+                    <p className="text-gray-400 font-black italic uppercase tracking-widest text-sm">Keine Mitglieder gefunden</p>
+                </div>
+            )}
         </div>
     );
 }

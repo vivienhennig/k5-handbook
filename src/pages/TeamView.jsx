@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Users } from 'lucide-react';
-import { userApi } from '../services/api';
-import { DEPARTMENT_COLORS } from '../config/data';
-import UserCard from '../components/Team/UserCard';
-import TeamFilterBar from '../components/Team/TeamFilterBar';
+import { userApi } from '../services/api.js';
+import { DEPARTMENT_COLORS } from '../config/data.js';
+import UserCard from '../components/Team/UserCard.jsx';
+import TeamFilterBar from '../components/Team/TeamFilterBar.jsx';
 
 export default function TeamView() {
     const [users, setUsers] = useState([]);

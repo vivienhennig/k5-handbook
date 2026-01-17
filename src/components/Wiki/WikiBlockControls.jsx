@@ -79,15 +79,14 @@ export default function WikiBlockControls({ block, onUpdate, onDelete, onMove, o
                 <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
 
                 {/* 4. Style & Delete */}
-<button 
-    type="button"
-    onClick={(e) => { e.stopPropagation(); onDuplicate(); }} 
-    className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
-    title="Block duplizieren"
->
-    <Copy size={16}/>
-</button>
-
+                <button 
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onDuplicate(); }} 
+                    className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
+                    title="Block duplizieren"
+                >
+                    <Copy size={16}/>
+                </button>   
                 <button 
                     type="button"
                     onClick={(e) => { e.stopPropagation(); onUpdate(block.id, 'style', block.style === 'card' ? 'flat' : 'card'); }} 

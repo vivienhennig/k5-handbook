@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { User, AlertTriangle, Flag, Camera, Briefcase, Save, X, Palmtree } from 'lucide-react';
-import { authService, feedbackApi } from '../services/api';
+import { authService, feedbackApi } from '../services/api.js';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../config/firebase';
-import { vacationApi } from '../services/api';
-import { STANDARD_VACATION_DAYS } from '../config/data';
+import { auth } from '../config/firebase.js';
+import { vacationApi } from '../services/api.js';
+import { STANDARD_VACATION_DAYS } from '../config/data.js';
 
 // --- LOGIN MODAL (Wird aktuell vom Gatekeeper in App.jsx ersetzt, aber als Fallback gut zu haben) ---
 export const LoginModal = ({ isOpen, onClose, onLogin }) => {

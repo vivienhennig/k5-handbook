@@ -1,10 +1,10 @@
-import { auth, db } from '../config/firebase';
+import { auth, db } from '../config/firebase.js';
 import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from 'firebase/auth';
 import { 
     collection, addDoc, getDocs, doc, getDoc, setDoc, deleteDoc, 
     query, orderBy, serverTimestamp, updateDoc, where, limit 
 } from 'firebase/firestore';
-import { PUBLIC_HOLIDAYS as IMPORTED_HOLIDAYS } from '../config/data';
+import { PUBLIC_HOLIDAYS as IMPORTED_HOLIDAYS } from '../config/data.js';
 
 const PUBLIC_HOLIDAYS = IMPORTED_HOLIDAYS || [];
 
@@ -131,7 +131,7 @@ export const vacationApi = {
 
 // --- EVENTS API ---
 export const eventApi = {
-async getAllEvents() {
+    async getAllEvents() {
         if (!db) return [];
         // Wir ändern startDate zu start
         const q = query(collection(db, "events"), orderBy("start", "asc"));
@@ -362,5 +362,80 @@ export const contentApi = {
             const snap = await getDocs(q);
             return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         } catch (e) { return []; }
+    },
+
+    getTicketSettings: async () => {
+        try {
+            // Wir nutzen hier 'settings_tickets' als festen Bezeichner
+            return await contentApi.getGuideline('settings_tickets');
+        } catch (error) {
+            console.error("Fehler beim Laden der Ticket-Settings:", error);
+            return null;
+        }
+    },
+
+    // Speichert die Phasen und Preise
+    updateTicketSettings: async (ticketData) => {
+        try {
+            // ticketData enthält { phases: [...], types: [...] }
+            const dataToSave = {
+                ...ticketData,
+                lastUpdated: new Date().toISOString(),
+                updatedBy: auth.currentUser?.displayName || 'Admin'
+            };
+            return await contentApi.updateGuideline('settings_tickets', dataToSave);
+        } catch (error) {
+            console.error("Fehler beim Speichern der Ticket-Settings:", error);
+            throw error;
+        }
     }
 };
+
+// --- TICKETING EXTERNAL API ---
+export const ticketingApi = {
+    getStats: async () => {
+        try {
+            const response = await fetch('https://vivenu.com/api/tickets?event=6917386798fabc2c10b72bbf', {
+            headers: { 'Authorization': `Bearer key_9f082821163bb109aacdc390b03103bb1df3b3953f3369bdead5da6050f0c5bd5e971ecb453f22e921580a5d693a8514` }
+        });
+        const rawJson = await response.json();
+        
+        const retailerIds = [
+            "69207918025da6af0e3e79c8", "69207b96025da6af0e3e79c9",
+            "69207c47025da6af0e3e79ca", "69207ed4025da6af0e3e79cb",
+            "69207f24025da6af0e3e79cc", "69207f7b025da6af0e3e79cd",
+            "69207fc2025da6af0e3e79ce", "692080c0025da6af0e3e79d0",
+            "69208019025da6af0e3e79cf", "6920968d025da6af0e3e79e3",
+            "6920975a025da6af0e3e79e4", "692f07b7bc35a35414fedfa5",
+            "69208f5e025da6af0e3e79db", "69208faf025da6af0e3e79dc",
+            "69174a8aea39e721cb39c702", "69174b0cea39e721cb39c703",
+            "69208144025da6af0e3e79d1"
+        ];
+
+        let retailerCount = 0;
+        
+        // Wir zählen nur die Retailer
+        if (rawJson.rows && Array.isArray(rawJson.rows)) {
+            rawJson.rows.forEach(ticket => {
+                if (retailerIds.includes(ticket.ticketTypeId)) {
+                    retailerCount++;
+                }
+            });
+        }
+
+        const total = rawJson.total || 0;
+        // Der Rest ist Non-Retailer (garantiert 100% in der Summe)
+        const nonRetailerCount = total - retailerCount;
+
+        return {
+            total: total,
+            retailer: retailerCount,
+            nonRetailer: Math.max(0, nonRetailerCount) // Verhindert negative Werte bei API-Lags
+        }; 
+    } catch (e) {
+        console.error("Ticketing Stats Error", e);
+        return { total: 0, retailer: 0, nonRetailer: 0 };
+    }
+}
+};
+

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { HelpCircle, Info } from 'lucide-react';
-import { HELP_TEXTS } from '../../config/data';
+import { HELP_TEXTS } from '../../config/data.js';
 
 export default function HelpBeacon({ context }) {
     const [isOpen, setIsOpen] = useState(false);

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { X, Save, User, Briefcase, Building2, Loader2, Image as ImageIcon, List, Cake, Sparkles } from 'lucide-react';
-import { userApi } from '../services/api';
-import { DEPARTMENT_COLORS } from '../config/data';
-import { useToast } from '../context/ToastContext';
+import { userApi } from '../../services/api.js';
+import { DEPARTMENT_COLORS } from '../../config/data.js';
+import { useToast } from '../../context/ToastContext.jsx';
 
 export default function ProfileModal({ user, onClose, onUpdate }) {
     const { addToast } = useToast();

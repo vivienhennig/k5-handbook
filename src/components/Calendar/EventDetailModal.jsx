@@ -4,7 +4,7 @@ import {
     Users, Check, XCircle, Trash2, Sparkles, 
     Edit2, Save, Globe 
 } from 'lucide-react';
-import { EVENT_TYPES } from '../config/data';
+import { EVENT_TYPES } from '../../config/data.js';
 
 export default function EventDetailModal({ 
     event, 

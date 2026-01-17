@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
-import { eventApi } from '../services/api';
-import { useToast } from '../context/ToastContext';
+import { eventApi } from '../services/api.js';
+import { useToast } from '../context/ToastContext.jsx';
 
 import { doc, updateDoc } from "firebase/firestore";
-import { db } from '../config/firebase';
+import { db } from '../config/firebase.js';
 
 // Komponenten
-import CalendarDay from '../components/Calendar/CalendarDay';
-import CreateEventModal from '../components/Calendar/CreateEventModal';
-import EventDetailModal from '../components/EventDetailModal';
+import CalendarDay from '../components/Calendar/CalendarDay.jsx';
+import CreateEventModal from '../components/Calendar/CreateEventModal.jsx';
+import EventDetailModal from '../components/Calendar/EventDetailModal.jsx';
 
 export default function CalendarView({ currentUser }) {
     const { addToast } = useToast();
@@ -29,23 +29,23 @@ export default function CalendarView({ currentUser }) {
     };
 
     const handleUpdateEvent = async (eventId, newData) => {
-    try {
-        // 1. In Firebase aktualisieren
-        // 'events' ist der Name deiner Collection
-        const eventRef = doc(db, 'events', eventId);
-        await updateDoc(eventRef, newData);
+        try {
+            // 1. In Firebase aktualisieren
+            // 'events' ist der Name deiner Collection
+            const eventRef = doc(db, 'events', eventId);
+            await updateDoc(eventRef, newData);
 
-        // 2. Lokalen State aktualisieren, damit die Änderung sofort sichtbar ist
-        setEvents(prev => prev.map(evt => evt.id === eventId ? { ...evt, ...newData } : evt));
+            // 2. Lokalen State aktualisieren, damit die Änderung sofort sichtbar ist
+            setEvents(prev => prev.map(evt => evt.id === eventId ? { ...evt, ...newData } : evt));
         
-        // 3. Modal schließen oder Feedback geben
-        setSelectedEvent(null);
-        addToast("Event erfolgreich aktualisiert! 🚀");
-    } catch (error) {
-        console.error("Fehler beim Update:", error);
-        addToast("Fehler beim Speichern der Änderungen", "error");
-    }
-};
+            // 3. Modal schließen oder Feedback geben
+            setSelectedEvent(null);
+            addToast("Event erfolgreich aktualisiert! 🚀");
+        } catch (error) {
+            console.error("Fehler beim Update:", error);
+            addToast("Fehler beim Speichern der Änderungen", "error");
+        }
+    };
 
     const handleSave = async (formData) => {
         setLoading(true);
@@ -69,6 +69,18 @@ export default function CalendarView({ currentUser }) {
             setLoading(false);
         }
     };
+
+    const handleDeleteEvent = async (eventId) => {
+        try {
+            await eventApi.deleteEvent(eventId);
+            setEvents(prev => prev.filter(evt => evt.id !== eventId));
+            setSelectedEvent(null);
+            addToast("Event erfolgreich gelöscht.");
+        } catch (error) {
+            console.error("Lösch-Fehler:", error);
+            addToast("Fehler beim Löschen des Events", "error");
+        }
+    }
 
     const { days, monthName } = useMemo(() => {
         const year = viewDate.getFullYear();
@@ -194,6 +206,7 @@ export default function CalendarView({ currentUser }) {
                 onRSVP={handleRSVP}
                 isPrivileged={isPrivileged}
                 onUpdate={handleUpdateEvent}
+                onDelete={handleDeleteEvent}
             />
 
             <CreateEventModal 

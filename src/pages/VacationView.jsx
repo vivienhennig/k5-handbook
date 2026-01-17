@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Palmtree } from 'lucide-react';
-import { STANDARD_VACATION_DAYS, DEPARTMENT_COLORS } from '../config/data';
-import { vacationApi, userApi, calculateWorkDays } from '../services/api'; 
-import { useToast } from '../context/ToastContext';
+import { STANDARD_VACATION_DAYS, DEPARTMENT_COLORS } from '../config/data.js';
+import { vacationApi, userApi, calculateWorkDays } from '../services/api.js'; 
+import { useToast } from '../context/ToastContext.jsx';
 
 // Neue Sub-Komponenten
-import VacationStats from '../components/Vacation/VacationStats';
-import VacationForm from '../components/Vacation/VacationForm';
-import TeamTimeline from '../components/Vacation/TeamTimeline';
-import MyVacationList from '../components/Vacation/MyVacationList'; // Optional: Falls du die Liste auch auslagerst
+import VacationStats from '../components/Vacation/VacationStats.jsx';
+import VacationForm from '../components/Vacation/VacationForm.jsx';
+import TeamTimeline from '../components/Vacation/TeamTimeline.jsx';
+import MyVacationList from '../components/Vacation/MyVacationList.jsx';
 
 export default function VacationView({ currentUser }) {
     const { addToast } = useToast();
